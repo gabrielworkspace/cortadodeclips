@@ -1,0 +1,9 @@
+node_modules/
+modelos/
+baixados/
+saida/
+trabalho/
+.git/
+*.bat
+LEIA-ME.txt
+.env

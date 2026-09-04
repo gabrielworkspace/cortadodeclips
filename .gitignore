@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+__pycache__/
+*.pyc
+
+# Modelo de transcricao (500 MB - baixa sozinho na primeira vez)
+modelos/
+
+# Videos e arquivos gerados - nunca sobem pro repositorio
+baixados/
+saida/
+trabalho/
+
+# Segredos
+.env
+*.key
+
+# Lixo do sistema
+Thumbs.db
+desktop.ini
+.DS_Store

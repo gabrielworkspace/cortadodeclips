@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cortador Automático</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --fundo: #0b0e14;
+    --painel: #141922;
+    --painel2: #1b212c;
+    --borda: #262e3b;
+    --borda2: #333d4d;
+    --texto: #e8eef6;
+    --suave: #8b95a5;
+    --fraco2: #5f6874;
+    --destaque: #ff4d6d;
+    --destaque2: #ff8a5c;
+    --azul: #38bdf8;
+    --verde: #4ade80;
+    --otimo: #22c55e;
+    --bom: #84cc16;
+    --medio: #eab308;
+  }
+
+  body {
+    background: var(--fundo);
+    color: var(--texto);
+    font: 15px/1.55 "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 24px 22px 70px;
+  }
+  .pagina { max-width: 1080px; margin: 0 auto; }
+
+  /* ---------------------------------------------------- topo */
+  .topo { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--destaque), var(--destaque2));
+    display: grid; place-items: center; font-size: 19px;
+  }
+  .topo h1 { font-size: 19px; font-weight: 650; letter-spacing: -.3px; }
+  .topo p { color: var(--suave); font-size: 12.5px; }
+
+  /* ---------------------------------------------------- etapas */
+  .etapa {
+    background: var(--painel);
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: opacity .2s, border-color .2s;
+  }
+  .etapa.bloqueada { opacity: .4; pointer-events: none; }
+  .etapa.pronta { border-color: #2c4a3a; }
+
+  .etapa-cabeca {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+  }
+  .etapa-num {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    background: var(--painel2); border: 1px solid var(--borda2);
+    display: grid; place-items: center;
+    font-size: 12.5px; font-weight: 700; color: var(--suave);
+  }
+  .etapa.pronta .etapa-num { background: #16351f; border-color: #2f6b3f; color: var(--verde); }
+  .etapa-titulo { font-size: 15.5px; font-weight: 650; flex: 1; }
+  .etapa-resumo { font-size: 12.5px; color: var(--suave); text-align: right; }
+  .etapa-corpo { padding: 0 20px 20px; }
+
+  /* ---------------------------------------------------- controles */
+  .linha { display: flex; gap: 8px; }
+  .linha > input[type=text] { flex: 1; min-width: 0; }
+
+  input[type=text], input[type=password], input[type=number], select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    background: var(--painel2); color: var(--texto);
+    border: 1px solid var(--borda2); font: inherit; font-size: 14px;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--destaque); }
+  input::placeholder, textarea::placeholder { color: var(--fraco2); }
+  textarea { resize: vertical; min-height: 74px; line-height: 1.5; }
+
+  .btn {
+    padding: 10px 18px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600;
+    background: var(--painel2); color: var(--texto);
+    border: 1px solid var(--borda2); cursor: pointer; transition: .15s; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--destaque); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.mini { padding: 6px 11px; font-size: 12px; }
+
+  .btn-grande {
+    display: block; width: 100%; padding: 16px; border: none; border-radius: 13px;
+    background: linear-gradient(135deg, var(--destaque), var(--destaque2));
+    color: #fff; font: inherit; font-size: 16.5px; font-weight: 650; cursor: pointer;
+    transition: .15s;
+  }
+  .btn-grande:hover:not(:disabled) { filter: brightness(1.1); }
+  .btn-grande:disabled { opacity: .35; cursor: not-allowed; filter: grayscale(.6); }
+
+  .dica { font-size: 12px; color: var(--suave); margin-top: 6px; line-height: 1.45; }
+  .rotulo { display: block; font-size: 12.5px; color: var(--suave); margin-bottom: 6px; font-weight: 500; }
+
+  /* ---------------------------------------------------- etapa 1: video */
+  .fonte-abas { display: flex; gap: 6px; margin-bottom: 14px; }
+  .aba {
+    padding: 8px 15px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    background: transparent; color: var(--suave); border: 1px solid transparent;
+    cursor: pointer; transition: .15s;
+  }
+  .aba:hover { color: var(--texto); }
+  .aba.ativa { background: var(--painel2); color: var(--texto); border-color: var(--borda2); }
+
+  #zona {
+    border: 2px dashed var(--borda2); border-radius: 13px;
+    padding: 28px 20px; text-align: center; cursor: pointer; transition: .15s;
+  }
+  #zona:hover, #zona.sobre { border-color: var(--destaque); background: #17131a; }
+  #zona .icone { font-size: 32px; margin-bottom: 6px; }
+  #zona h3 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  #zona p { color: var(--suave); font-size: 12.5px; }
+
+  .arquivo-card {
+    display: flex; align-items: center; gap: 13px;
+    background: var(--painel2); border: 1px solid var(--borda2);
+    border-radius: 12px; padding: 13px 15px;
+  }
+  .arquivo-icone {
+    width: 40px; height: 40px; border-radius: 9px; flex: none;
+    background: linear-gradient(135deg, #2b3550, #1b2334);
+    display: grid; place-items: center; font-size: 18px;
+  }
+  .arquivo-nome { font-weight: 600; font-size: 14px; word-break: break-all; }
+  .arquivo-meta { color: var(--suave); font-size: 12px; margin-top: 2px; }
+
+  /* ---------------------------------------------------- etapa 2: enquadramento */
+  .cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 10px; }
+  .cartao-opcao {
+    background: var(--painel2); border: 2px solid var(--borda);
+    border-radius: 12px; padding: 14px; cursor: pointer; transition: .15s; text-align: left;
+    font: inherit; color: var(--texto);
+  }
+  .cartao-opcao:hover { border-color: var(--borda2); }
+  .cartao-opcao.ativo { border-color: var(--destaque); background: #1d1620; }
+  .cartao-opcao .fig {
+    width: 100%; height: 62px; border-radius: 7px; margin-bottom: 10px;
+    display: flex; flex-direction: column; gap: 2px; overflow: hidden;
+  }
+  .fig i { display: block; flex: 1; }
+  .fig .cam { background: linear-gradient(135deg, #2f5f7a, #24485e); flex: 0 0 32%; }
+  .fig .jogo { background: linear-gradient(135deg, #3f6b45, #2c4d31); }
+  .fig .cheio { background: linear-gradient(135deg, #4a4560, #35314a); }
+  .cartao-opcao b { display: block; font-size: 13.5px; font-weight: 650; margin-bottom: 3px; }
+  .cartao-opcao span { font-size: 11.5px; color: var(--suave); line-height: 1.4; }
+
+  .editor { display: none; margin-top: 18px; }
+  .editor.ativo { display: block; }
+  .editor-grade { display: grid; grid-template-columns: 1fr 250px; gap: 16px; align-items: start; }
+  @media (max-width: 880px) { .editor-grade { grid-template-columns: 1fr; } }
+
+  #palco { position: relative; border-radius: 11px; background: #000; user-select: none; touch-action: none; line-height: 0; }
+  #palco img { width: 100%; display: block; border-radius: 11px; }
+
+  .caixa-recorte { position: absolute; border: 3px solid; border-radius: 6px; cursor: move; box-sizing: border-box; touch-action: none; }
+  .caixa-recorte .rot {
+    position: absolute; top: 0; left: 0; padding: 4px 8px; border-radius: 3px 0 6px 0;
+    font: 700 10px/1 "Segoe UI", sans-serif; letter-spacing: .8px; color: #05070c; pointer-events: none;
+  }
+  .caixa-recorte .alca {
+    position: absolute; right: 3px; bottom: 3px; width: 22px; height: 22px;
+    border-radius: 5px; cursor: nwse-resize; border: 2px solid #05070c;
+    display: grid; place-items: center; font-size: 12px; color: #05070c;
+  }
+  #caixaTopo { border-color: var(--azul); z-index: 3; }
+  #caixaTopo .rot, #caixaTopo .alca { background: var(--azul); }
+  #caixaBaixo { border-color: var(--verde); z-index: 2; border-style: dashed; }
+  #caixaBaixo .rot, #caixaBaixo .alca { background: var(--verde); }
+  .caixa-recorte.mexendo { border-style: solid; filter: brightness(1.2); }
+
+  .previa-caixa {
+    background: #05070c; border: 1px solid var(--borda); border-radius: 11px;
+    padding: 9px; text-align: center; margin-bottom: 12px;
+  }
+  .previa-caixa img { max-width: 100%; max-height: 300px; border-radius: 6px; }
+  .previa-vazia { color: var(--fraco2); font-size: 12px; padding: 46px 8px; }
+
+  .faixa { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+  .faixa > span:first-child { font-size: 12px; color: var(--suave); min-width: 82px; }
+  .faixa input[type=range] { flex: 1; accent-color: var(--destaque); min-width: 0; }
+  .faixa .valor { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--suave); min-width: 40px; text-align: right; }
+
+  .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .presets .btn { padding: 7px 4px; font-size: 11.5px; }
+
+  /* ---------------------------------------------------- etapa 3: pedido */
+  .sugestoes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+  .chip {
+    padding: 7px 13px; border-radius: 99px; font-size: 12.5px; font-weight: 500;
+    background: var(--painel2); color: var(--suave);
+    border: 1px solid var(--borda2); cursor: pointer; transition: .15s;
+  }
+  .chip:hover { border-color: var(--destaque); color: var(--texto); }
+  .chip.ativo { background: #2a1a22; border-color: var(--destaque); color: #ffc9d3; }
+
+  /* ---------------------------------------------------- avancado */
+  details.avancado { margin-bottom: 14px; }
+  details.avancado > summary {
+    cursor: pointer; color: var(--suave); font-size: 13px; font-weight: 600;
+    list-style: none; user-select: none; padding: 11px 4px;
+  }
+  details.avancado > summary::-webkit-details-marker { display: none; }
+  details.avancado > summary::before { content: "▸ "; }
+  details.avancado[open] > summary::before { content: "▾ "; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 14px; }
+  .marcar { display: flex; align-items: flex-start; gap: 9px; cursor: pointer; user-select: none; margin-top: 12px; }
+  .marcar input { width: 16px; height: 16px; accent-color: var(--destaque); cursor: pointer; margin-top: 2px; flex: none; }
+  .marcar span { font-size: 13.5px; line-height: 1.4; }
+
+  /* ---------------------------------------------------- progresso */
+  #progresso { display: none; }
+  #progresso.ativo { display: block; }
+  .barra-fora { height: 8px; background: var(--painel2); border-radius: 99px; overflow: hidden; margin: 13px 0 9px; }
+  .barra-dentro { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--destaque), var(--destaque2)); transition: width .35s ease; }
+  .linha-etapa { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  #etapaTexto { font-weight: 600; }
+  #pctTexto { color: var(--suave); font-variant-numeric: tabular-nums; font-size: 14px; }
+  #registro {
+    margin-top: 12px; max-height: 122px; overflow-y: auto;
+    font: 12px/1.65 Consolas, monospace; color: var(--suave);
+    background: #05070c; border-radius: 9px; padding: 10px 12px;
+  }
+
+  /* ---------------------------------------------------- resultado */
+  #resultado { display: none; }
+  #resultado.ativo { display: block; }
+  .cab-res { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 15px; }
+  .cab-res h2 { font-size: 18px; font-weight: 650; }
+  .clipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+  .clipe { background: var(--painel); border: 1px solid var(--borda); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .clipe video { width: 100%; aspect-ratio: 9/16; object-fit: contain; background: #000; display: block; }
+  .clipe.horizontal video { aspect-ratio: 16/9; }
+  .clipe-corpo { padding: 13px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  .clipe-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .clipe-num { font-size: 11.5px; font-weight: 700; color: var(--suave); letter-spacing: .6px; }
+  .nota { padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .nota.otimo { background: rgba(34,197,94,.15); color: var(--otimo); }
+  .nota.bom   { background: rgba(132,204,22,.15); color: var(--bom); }
+  .nota.medio { background: rgba(234,179,8,.15); color: var(--medio); }
+  .nota.fraco { background: rgba(107,114,128,.15); color: #9ca3af; }
+  .clipe-titulo { font-weight: 600; font-size: 14px; line-height: 1.35; }
+  .clipe-tempo { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+  .titulos-alt { display: flex; flex-direction: column; gap: 5px; }
+  .titulo-alt {
+    text-align: left; font: inherit; font-size: 11.5px; line-height: 1.35;
+    padding: 6px 9px; border-radius: 7px; cursor: pointer;
+    background: var(--painel2); color: var(--suave); border: 1px solid var(--borda); transition: .15s;
+  }
+  .titulo-alt:hover { border-color: var(--destaque); color: var(--texto); }
+  .motivos { display: flex; flex-wrap: wrap; gap: 5px; }
+  .motivo { font-size: 10.5px; padding: 3px 7px; border-radius: 6px; background: var(--painel2); color: var(--suave); border: 1px solid var(--borda); }
+  .motivo.ruim { color: #f87171; border-color: #4a2626; }
+  .observacao { font-size: 11.5px; line-height: 1.45; padding: 7px 9px; border-radius: 7px; background: rgba(56,189,248,.09); border: 1px solid #23506b; color: #7dd3fc; }
+  .transcricao { font-size: 12px; color: var(--suave); line-height: 1.5; max-height: 54px; overflow: hidden; position: relative; cursor: pointer; }
+  .transcricao.aberta { max-height: none; }
+  .transcricao::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(transparent, var(--painel)); }
+  .transcricao.aberta::after { display: none; }
+  .clipe-botoes { display: flex; gap: 6px; margin-top: auto; padding-top: 3px; }
+  .clipe-botoes .btn { flex: 1; }
+
+  #erro { display: none; background: rgba(248,113,113,.1); border: 1px solid #7f2c2c; color: #fca5a5; padding: 13px 16px; border-radius: 11px; margin-bottom: 15px; font-size: 14px; }
+  #erro.ativo { display: block; }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2d3644; border-radius: 9px; }
+</style>
+</head>
+<body>
+<div class="pagina">
+
+<div class="topo">
+  <div class="logo">✂️</div>
+  <div>
+    <h1>Cortador Automático</h1>
+    <p>Vídeo longo entra, cortes prontos pra Reels, TikTok e Shorts saem</p>
+  </div>
+</div>
+
+<div id="erro"></div>
+
+<div id="fluxo">
+
+  <!-- ============ ETAPA 1 ============ -->
+  <div class="etapa" id="etapa1">
+    <div class="etapa-cabeca">
+      <div class="etapa-num">1</div>
+      <div class="etapa-titulo">Qual vídeo</div>
+      <div class="etapa-resumo" id="resumo1"></div>
+    </div>
+    <div class="etapa-corpo">
+
+      <div id="escolherVideo">
+        <div class="fonte-abas">
+          <button class="aba ativa" data-aba="link">Link do vídeo</button>
+          <button class="aba" data-aba="arquivo">Arquivo do PC</button>
+        </div>
+
+        <div id="painelLink">
+          <div class="linha">
+            <input type="text" id="urlVideo" placeholder="Cole aqui o link do YouTube, Kick, Twitch..." autocomplete="off">
+            <select id="limiteAltura" style="width:auto">
+              <option value="1080" selected>até 1080p</option>
+              <option value="1440">até 1440p</option>
+              <option value="0">a melhor</option>
+            </select>
+            <button class="btn" id="btnBaixar">Baixar</button>
+          </div>
+          <div class="dica" id="dicaLink">Na Kick, copie o endereço da barra do navegador com o vídeo aberto.</div>
+
+          <div id="progressoLink" style="display:none; margin-top:12px">
+            <div class="barra-fora" style="margin:0 0 7px"><div class="barra-dentro" id="barraLink"></div></div>
+            <div class="dica" id="statusLink" style="margin:0">Começando...</div>
+          </div>
+        </div>
+
+        <div id="painelArquivo" style="display:none">
+          <div id="zona">
+            <div class="icone">🎬</div>
+            <h3 id="zonaTitulo">Arraste o vídeo aqui</h3>
+            <p id="zonaTexto">ou clique para escolher &nbsp;·&nbsp; MP4, MKV, MOV, AVI, WEBM</p>
+          </div>
+          <input type="file" id="arquivoReal" accept="video/*" style="display:none">
+          <div class="linha" id="linhaCaminho" style="margin-top:9px">
+            <input type="text" id="caminhoManual" placeholder="ou cole o caminho: C:\Users\...\video.mp4">
+            <button class="btn" id="btnUsarCaminho">Usar</button>
+          </div>
+          <div id="progressoEnvio" style="display:none; margin-top:11px">
+            <div class="barra-fora" style="margin:0 0 7px"><div class="barra-dentro" id="barraEnvio"></div></div>
+            <div class="dica" id="statusEnvio" style="margin:0">Enviando...</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="videoEscolhido" style="display:none">
+        <div class="arquivo-card">
+          <div class="arquivo-icone">🎞️</div>
+          <div style="flex:1; min-width:0">
+            <div class="arquivo-nome" id="nomeArquivo"></div>
+            <div class="arquivo-meta" id="metaArquivo">lendo...</div>
+          </div>
+          <button class="btn mini" id="btnTrocar">Trocar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ ETAPA 2 ============ -->
+  <div class="etapa bloqueada" id="etapa2">
+    <div class="etapa-cabeca">
+      <div class="etapa-num">2</div>
+      <div class="etapa-titulo">Como enquadrar</div>
+      <div class="etapa-resumo" id="resumo2"></div>
+    </div>
+    <div class="etapa-corpo">
+
+      <div class="cartoes">
+        <button class="cartao-opcao ativo" data-formato="split">
+          <div class="fig"><i class="cam"></i><i class="jogo"></i></div>
+          <b>Pessoa + jogo</b>
+          <span>Webcam em cima, jogo embaixo. Você marca as duas áreas.</span>
+        </button>
+        <button class="cartao-opcao" data-formato="foco">
+          <div class="fig"><i class="jogo"></i></div>
+          <b>Só uma área</b>
+          <span>Sem webcam. Você marca a área que quer focar.</span>
+        </button>
+        <button class="cartao-opcao" data-formato="vertical">
+          <div class="fig"><i class="cheio"></i></div>
+          <b>Tela cheia 9:16</b>
+          <span>Corta as laterais do vídeo, sem marcar nada.</span>
+        </button>
+        <button class="cartao-opcao" data-formato="original">
+          <div class="fig"><i class="cheio" style="flex:0 0 58%; align-self:center"></i></div>
+          <b>Não mexer</b>
+          <span>Mantém o formato original. Pra editar depois.</span>
+        </button>
+      </div>
+
+      <div class="editor" id="editor">
+        <div class="editor-grade">
+          <div>
+            <div id="palco">
+              <img id="frameImg" alt="frame do vídeo">
+              <div class="caixa-recorte" id="caixaTopo"><span class="rot">PESSOA</span><i class="alca">⤡</i></div>
+              <div class="caixa-recorte" id="caixaBaixo"><span class="rot">ÁREA DO JOGO</span><i class="alca">⤡</i></div>
+            </div>
+            <div class="faixa" style="margin-top:11px">
+              <span>Momento</span>
+              <input type="range" id="tempoFrame" min="0" max="100" value="15">
+              <span class="valor" id="tempoFrameTxt">–</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="previa-caixa" id="previaCaixa">
+              <div class="previa-vazia">a prévia do corte<br>aparece aqui</div>
+            </div>
+
+            <button class="btn" id="btnDesenhar" style="width:100%; margin-bottom:9px">✏️ Desenhar a área</button>
+
+            <div id="soSplit">
+              <div style="font-size:11.5px;color:var(--suave);font-weight:600;margin-bottom:6px">Onde está a webcam</div>
+              <div class="presets">
+                <button class="btn" data-preset="se">↖ sup. esq.</button>
+                <button class="btn" data-preset="sd">↗ sup. dir.</button>
+                <button class="btn" data-preset="ie">↙ inf. esq.</button>
+                <button class="btn" data-preset="id">↘ inf. dir.</button>
+              </div>
+              <div class="faixa">
+                <span>Altura pessoa</span>
+                <input type="range" id="proporcaoTopo" min="15" max="60" value="32">
+                <span class="valor" id="proporcaoTxt">32%</span>
+              </div>
+              <div class="faixa">
+                <span>Linha</span>
+                <input type="range" id="espessuraLinha" min="0" max="30" value="8">
+                <span class="valor" id="linhaTxt">8px</span>
+              </div>
+              <div class="faixa">
+                <span>Cor da linha</span>
+                <input type="color" id="corLinha" value="#ffffff" style="flex:1;height:30px;padding:2px;cursor:pointer">
+              </div>
+            </div>
+
+            <button class="btn" id="btnAreaCheia" style="width:100%; font-size:11.5px">⛶ Área = tela inteira</button>
+          </div>
+        </div>
+      </div>
+
+      <label class="marcar">
+        <input type="checkbox" id="detectarWebcam" checked>
+        <span>Detectar quando ele aparece em tela cheia
+          <span style="color:var(--suave)">— nesses trechos não usa o split, pra não cortar o rosto em dois</span></span>
+      </label>
+
+    </div>
+  </div>
+
+  <!-- ============ ETAPA 3 ============ -->
+  <div class="etapa bloqueada" id="etapa3">
+    <div class="etapa-cabeca">
+      <div class="etapa-num">3</div>
+      <div class="etapa-titulo">O que você quer nos cortes</div>
+      <div class="etapa-resumo" id="resumo3"></div>
+    </div>
+    <div class="etapa-corpo">
+
+      <textarea id="descricao" placeholder="Escreva com suas palavras. Ex: quero os momentos em que ele abre o ovo e vem um pet raro, e quando ele fica surpreso"></textarea>
+
+      <div class="sugestoes" id="sugestoes">
+        <button class="chip" data-texto="os melhores momentos para viralizar">🔥 Melhores momentos</button>
+        <button class="chip" data-texto="os momentos mais engraçados">😂 Mais engraçados</button>
+        <button class="chip" data-texto="quando ele abre e revela algo raro">🎁 Revelações e aberturas</button>
+        <button class="chip" data-texto="os momentos de tensão, quando ele quase perde">😰 Momentos de tensão</button>
+        <button class="chip" data-texto="quando ele explica ou dá uma dica">💡 Explicações e dicas</button>
+      </div>
+
+      <div class="dica" id="lidoComo" style="margin-top:12px"></div>
+
+      <label class="marcar">
+        <input type="checkbox" id="detectarMomentos" checked>
+        <span>Procurar os picos de reação
+          <span style="color:var(--suave)">— acha onde a voz explode e a imagem muda. Deixa o processo 1 a 3 min mais lento.</span></span>
+      </label>
+
+    </div>
+  </div>
+
+  <!-- ============ AJUSTES ============ -->
+  <details class="avancado" id="blocoAvancado">
+    <summary>Ajustes finos</summary>
+    <div class="etapa" style="margin-bottom:0">
+      <div class="etapa-corpo" style="padding-top:18px">
+        <div class="grade">
+          <div>
+            <label class="rotulo" for="quantidade">Quantos cortes</label>
+            <select id="quantidade">
+              <option value="4">4 cortes</option>
+              <option value="6">6 cortes</option>
+              <option value="8" selected>8 cortes</option>
+              <option value="10">10 cortes</option>
+              <option value="12">12 cortes</option>
+            </select>
+          </div>
+          <div>
+            <label class="rotulo" for="duracao">Duração de cada corte</label>
+            <select id="duracao">
+              <option value="18-40">20 a 40s — melhor retenção</option>
+              <option value="28-62" selected>30s a 1 min</option>
+              <option value="45-62">45s a 1 min</option>
+            </select>
+          </div>
+          <div>
+            <label class="rotulo" for="ordem">Ordem dos clipes</label>
+            <select id="ordem">
+              <option value="nota" selected>Melhores primeiro</option>
+              <option value="tempo">Ordem do vídeo</option>
+            </select>
+          </div>
+          <div>
+            <label class="rotulo" for="qualidade">Qualidade do vídeo</label>
+            <select id="qualidade">
+              <option value="maxima" selected>Máxima — sem perda visível</option>
+              <option value="alta">Alta — metade do tamanho</option>
+              <option value="rapida">Rápida — arquivo menor</option>
+            </select>
+          </div>
+          <div>
+            <label class="rotulo" for="modelo">Qualidade da transcrição</label>
+            <select id="modelo">
+              <option value="base">Rápida — 2x mais veloz</option>
+              <option value="small" selected>Equilibrada</option>
+              <option value="medium">Melhor — 3x mais lenta</option>
+            </select>
+          </div>
+          <div>
+            <label class="rotulo" for="tamanhoLegenda">Tamanho da legenda</label>
+            <input type="number" id="tamanhoLegenda" value="78" min="40" max="130" step="4">
+          </div>
+          <div>
+            <label class="rotulo" for="margemLegenda">Altura da legenda</label>
+            <input type="number" id="margemLegenda" value="430" min="80" max="1100" step="10">
+          </div>
+          <div>
+            <label class="rotulo" for="chaveIA">Chave da API Anthropic <span style="opacity:.7">(opcional)</span></label>
+            <input type="password" id="chaveIA" placeholder="sk-ant-..." autocomplete="off">
+          </div>
+        </div>
+
+        <label class="marcar">
+          <input type="checkbox" id="legendar" checked>
+          <span>Gravar a legenda no vídeo <span style="color:var(--suave)">— estilo Shorts, palavra por palavra</span></span>
+        </label>
+        <label class="marcar">
+          <input type="checkbox" id="textoGancho" checked>
+          <span>Escrever o gancho na tela nos primeiros segundos</span>
+        </label>
+      </div>
+    </div>
+  </details>
+
+  <button class="btn-grande" id="btnProcessar" disabled>Escolha um vídeo para começar</button>
+  <div class="dica" style="text-align:center; margin-top:11px">
+    Deixe a janela preta aberta. Um vídeo de 30 min leva de 10 a 20 minutos.
+  </div>
+</div>
+
+<!-- ============ PROGRESSO ============ -->
+<div class="etapa" id="progresso">
+  <div class="etapa-corpo" style="padding-top:20px">
+    <div class="linha-etapa">
+      <div id="etapaTexto">Começando...</div>
+      <div id="pctTexto">0%</div>
+    </div>
+    <div class="barra-fora"><div class="barra-dentro" id="barra"></div></div>
+    <div id="registro"></div>
+  </div>
+</div>
+
+<!-- ============ RESULTADO ============ -->
+<div id="resultado">
+  <div class="cab-res">
+    <h2 id="tituloResultado">Seus cortes</h2>
+    <div style="display:flex; gap:8px">
+      <button class="btn" id="btnPasta">📁 Abrir a pasta</button>
+      <button class="btn" id="btnNovo">Cortar outro vídeo</button>
+    </div>
+  </div>
+  <div class="clipes" id="listaClipes"></div>
+</div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+    document.body.innerHTML =
+      '<div style="max-width:600px;margin:60px auto;text-align:center;font:15px/1.6 \'Segoe UI\',system-ui,sans-serif;color:#e8eef6">' +
+        '<div style="font-size:52px;margin-bottom:14px">🚫</div>' +
+        '<h1 style="font-size:22px;margin-bottom:12px">Esse não é o arquivo certo pra abrir</h1>' +
+        '<p style="color:#8b95a5;margin-bottom:22px">Este é só o desenho da tela. Quem lê o vídeo e corta é o programa que roda por trás.</p>' +
+        '<div style="background:#141922;border:1px solid #262e3b;border-radius:14px;padding:22px;text-align:left;color:#8b95a5">' +
+          '1. Feche esta janela.<br>2. Volte para a pasta <b style="color:#e8eef6">cortador automatico</b>.<br>' +
+          '3. Dê dois cliques em <b style="color:#ff8a5c">iniciar</b>.<br>' +
+          '4. Vai abrir uma janela preta. <b style="color:#e8eef6">Deixe ela aberta.</b><br>' +
+          '5. A janela do programa abre sozinha.' +
+        '</div></div>';
+    return;
+  }
+
+  // ---------------------------------------------------------- estado
+
+  let arquivo = null;
+  let duracaoVideo = 0;
+  let pastaSaida = null;
+  let formato = 'split';
+
+  const recorte = {
+    topo:  { x: 0.015, y: 0.02, w: 0.30, h: 0.34 },
+    baixo: { x: 0, y: 0, w: 1, h: 1 },
+    proporcaoTopo: 0.32,
+    linha: { cor: '#ffffff', espessura: 8 },
+  };
+
+  function mmss(s) {
+    s = Math.max(0, Math.round(s || 0));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function escapar(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function mostrarErro(msg) {
+    $('erro').textContent = msg;
+    $('erro').classList.add('ativo');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function esconderErro() { $('erro').classList.remove('ativo'); }
+
+  /** Libera as etapas seguintes assim que a anterior estiver resolvida. */
+  function atualizarEtapas() {
+    const temVideo = !!arquivo;
+    $('etapa1').classList.toggle('pronta', temVideo);
+    $('etapa2').classList.toggle('bloqueada', !temVideo);
+    $('etapa3').classList.toggle('bloqueada', !temVideo);
+    $('etapa2').classList.toggle('pronta', temVideo);
+
+    const desc = $('descricao').value.trim();
+    $('etapa3').classList.toggle('pronta', temVideo && desc.length > 0);
+
+    $('btnProcessar').disabled = !temVideo;
+    $('btnProcessar').textContent = temVideo ? 'Gerar os cortes' : 'Escolha um vídeo para começar';
+
+    $('resumo2').textContent = temVideo ? nomeDoFormato() : '';
+    $('resumo3').textContent = desc ? (desc.length > 40 ? desc.slice(0, 40) + '...' : desc) : '';
+  }
+
+  function nomeDoFormato() {
+    return formato === 'split' ? 'Pessoa + jogo'
+      : formato === 'foco' ? 'Só uma área'
+      : formato === 'vertical' ? 'Tela cheia 9:16' : 'Sem mexer';
+  }
+
+  // ---------------------------------------------------------- etapa 1
+
+  document.querySelectorAll('.aba').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.aba').forEach((x) => x.classList.remove('ativa'));
+      b.classList.add('ativa');
+      $('painelLink').style.display = b.dataset.aba === 'link' ? '' : 'none';
+      $('painelArquivo').style.display = b.dataset.aba === 'arquivo' ? '' : 'none';
+    });
+  });
+
+  // Sabe se da pra abrir o dialogo nativo do Windows (so faz sentido quando o
+  // navegador esta na MESMA maquina que o servidor). Remotamente - celular,
+  // outro computador - a unica forma de entrar com um video e enviando os
+  // bytes de verdade.
+  let temDialogoNativo = false;
+  let idSessao = 'sid-' + Math.random().toString(36).slice(2, 12);
+
+  fetch('/api/rede').then((x) => x.json()).then((r) => {
+    temDialogoNativo = !!r.temDialogoNativo && !r.naRede;
+    if (!temDialogoNativo) {
+      $('zonaTitulo').textContent = 'Toque para escolher o vídeo';
+      $('zonaTexto').textContent = 'do seu celular ou computador';
+      $('linhaCaminho').style.display = 'none';
+      $('btnPasta').style.display = 'none'; // "abrir a pasta" so faz sentido no PC local
+    }
+  }).catch(() => {});
+
+  async function pedirArquivo() {
+    if (temDialogoNativo) {
+      const r = await fetch('/api/escolher', { method: 'POST' }).then((x) => x.json());
+      if (r.caminho) definirArquivo(r.caminho);
+      return;
+    }
+    // sem dialogo nativo: abre o seletor de arquivo comum do navegador
+    // (no celular isso abre a galeria/arquivos do aparelho)
+    $('arquivoReal').click();
+  }
+
+  $('arquivoReal').addEventListener('change', () => {
+    const f = $('arquivoReal').files[0];
+    if (f) enviarArquivo(f);
+  });
+
+  /** Sobe o arquivo de verdade pro servidor, com barra de progresso. */
+  async function enviarArquivo(f) {
+    esconderErro();
+    $('progressoEnvio').style.display = 'block';
+    $('barraEnvio').style.width = '0%';
+    $('statusEnvio').textContent = 'Enviando ' + f.name + '...';
+
+    let r;
+    try {
+      r = await fetch('/api/upload?nome=' + encodeURIComponent(f.name), {
+        method: 'POST', body: f,
+      }).then((x) => x.json());
+    } catch (e) {
+      $('progressoEnvio').style.display = 'none';
+      return mostrarErro('Falha no envio. Confira sua conexão e tente de novo.');
+    }
+    if (r.erro) { $('progressoEnvio').style.display = 'none'; return mostrarErro(r.erro); }
+
+    const fonte = new EventSource('/api/eventos?id=' + r.id);
+    fonte.onmessage = (ev) => {
+      const d = JSON.parse(ev.data);
+      if (d.tipo === 'progresso') {
+        $('barraEnvio').style.width = d.pct + '%';
+        $('statusEnvio').textContent = d.msg;
+      } else if (d.tipo === 'baixado') {
+        fonte.close();
+        $('progressoEnvio').style.display = 'none';
+        definirArquivo(d.caminho);
+      } else if (d.tipo === 'erro') {
+        fonte.close();
+        $('progressoEnvio').style.display = 'none';
+        mostrarErro(d.msg);
+      }
+    };
+    fonte.onerror = () => { fonte.close(); $('progressoEnvio').style.display = 'none'; };
+  }
+
+  async function definirArquivo(caminho) {
+    arquivo = caminho;
+    $('nomeArquivo').textContent = caminho.split(/[\\/]/).pop();
+    $('metaArquivo').textContent = 'lendo o vídeo...';
+    $('escolherVideo').style.display = 'none';
+    $('videoEscolhido').style.display = '';
+    esconderErro();
+    atualizarEtapas();
+
+    try {
+      const info = await fetch('/api/info', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video: caminho }),
+      }).then((x) => x.json());
+
+      if (info.erro) throw new Error(info.erro);
+      duracaoVideo = info.duracao || 0;
+      $('metaArquivo').textContent = mmss(duracaoVideo) + '  ·  ' + info.largura + 'x' + info.altura +
+        (info.temAudio ? '' : '  ·  ⚠ sem áudio');
+      $('resumo1').textContent = mmss(duracaoVideo);
+      if (!info.temAudio) mostrarErro('Esse vídeo não tem áudio. Sem áudio não dá pra achar os cortes.');
+    } catch (e) {
+      $('metaArquivo').textContent = caminho;
+    }
+
+    mostrarEditor();
+  }
+
+  $('zona').addEventListener('click', pedirArquivo);
+
+  $('btnTrocar').addEventListener('click', () => {
+    arquivo = null;
+    duracaoVideo = 0;
+    $('escolherVideo').style.display = '';
+    $('videoEscolhido').style.display = 'none';
+    $('editor').classList.remove('ativo');
+    $('resumo1').textContent = '';
+    atualizarEtapas();
+  });
+
+  const zona = $('zona');
+  ['dragenter', 'dragover'].forEach((e) => zona.addEventListener(e, (ev) => {
+    ev.preventDefault(); zona.classList.add('sobre');
+  }));
+  ['dragleave', 'drop'].forEach((e) => zona.addEventListener(e, (ev) => {
+    ev.preventDefault(); zona.classList.remove('sobre');
+  }));
+  zona.addEventListener('drop', async (ev) => {
+    const f = ev.dataTransfer.files[0];
+    if (!f) return;
+
+    if (temDialogoNativo) {
+      // No PC local, tenta achar o arquivo pelo nome primeiro - evita subir
+      // bytes que ja estao na mesma maquina. Se nao achar, sobe de verdade.
+      try {
+        const r = await fetch('/api/localizar', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: f.name, tamanho: f.size }),
+        }).then((x) => x.json());
+        if (r.caminho) return definirArquivo(r.caminho);
+      } catch (_) { /* segue pro upload */ }
+    }
+    enviarArquivo(f);
+  });
+
+  async function usarCaminhoColado() {
+    const bruto = $('caminhoManual').value.trim();
+    if (!bruto) return;
+    const r = await fetch('/api/verificar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caminho: bruto }),
+    }).then((x) => x.json());
+    if (r.existe) definirArquivo(r.caminho);
+    else mostrarErro('Não existe arquivo nesse caminho. Confira se copiou inteiro, com o ".mp4" no fim.');
+  }
+  $('btnUsarCaminho').addEventListener('click', usarCaminhoColado);
+  $('caminhoManual').addEventListener('keydown', (e) => { if (e.key === 'Enter') usarCaminhoColado(); });
+
+  // baixar do link
+  let baixando = false;
+
+  async function baixarDoLink() {
+    if (baixando) return;
+    const url = $('urlVideo').value.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) return mostrarErro('Cole o endereço completo, começando com https://');
+
+    baixando = true;
+    esconderErro();
+    $('btnBaixar').disabled = true;
+    $('progressoLink').style.display = 'block';
+    $('barraLink').style.width = '0%';
+    $('statusLink').textContent = 'Consultando o link...';
+
+    try {
+      const info = await fetch('/api/espiar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      }).then((x) => x.json());
+      if (info.erro) throw new Error(info.erro);
+      $('statusLink').textContent = info.titulo + (info.duracao ? '  ·  ' + mmss(info.duracao) : '');
+    } catch (e) {
+      pararDownload();
+      return mostrarErro(e.message || 'Não consegui ler esse link.');
+    }
+
+    const r = await fetch('/api/baixar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, limiteAltura: Number($('limiteAltura').value) }),
+    }).then((x) => x.json());
+    if (r.erro) { pararDownload(); return mostrarErro(r.erro); }
+
+    const fonte = new EventSource('/api/eventos?id=' + r.id);
+    fonte.onmessage = (ev) => {
+      const d = JSON.parse(ev.data);
+      if (d.tipo === 'progresso') {
+        $('barraLink').style.width = d.pct + '%';
+        $('statusLink').textContent = d.msg;
+      } else if (d.tipo === 'baixado') {
+        fonte.close(); pararDownload();
+        $('progressoLink').style.display = 'none';
+        definirArquivo(d.caminho);
+      } else if (d.tipo === 'erro') {
+        fonte.close(); pararDownload(); mostrarErro(d.msg);
+      }
+    };
+    fonte.onerror = () => { fonte.close(); pararDownload(); };
+  }
+
+  function pararDownload() {
+    baixando = false;
+    $('btnBaixar').disabled = false;
+  }
+
+  $('btnBaixar').addEventListener('click', baixarDoLink);
+  $('urlVideo').addEventListener('keydown', (e) => { if (e.key === 'Enter') baixarDoLink(); });
+
+  // ---------------------------------------------------------- etapa 2
+
+  document.querySelectorAll('.cartao-opcao').forEach((c) => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.cartao-opcao').forEach((x) => x.classList.remove('ativo'));
+      c.classList.add('ativo');
+      formato = c.dataset.formato;
+
+      // no modo "só uma área" a caixa azul nao faz sentido
+      const ehSplit = formato === 'split';
+      $('caixaTopo').style.display = ehSplit ? '' : 'none';
+      $('soSplit').style.display = ehSplit ? '' : 'none';
+      $('btnDesenhar').textContent = ehSplit ? '✏️ Desenhar a área da pessoa' : '✏️ Desenhar a área do jogo';
+      $('margemLegenda').value = ehSplit ? 430 : 300;
+
+      atualizarEtapas();
+      mostrarEditor();
+    });
+  });
+
+  function precisaEditor() { return formato === 'split' || formato === 'foco'; }
+
+  function mostrarEditor() {
+    const liga = precisaEditor() && !!arquivo;
+    $('editor').classList.toggle('ativo', liga);
+    if (liga) carregarFrame();
+  }
+
+  function segundoDoSlider() {
+    const pct = Number($('tempoFrame').value) / 100;
+    return duracaoVideo ? Math.max(0, Math.min(duracaoVideo - 1, duracaoVideo * pct)) : 0;
+  }
+
+  async function carregarFrame() {
+    if (!arquivo) return;
+    const seg = segundoDoSlider();
+    $('tempoFrameTxt').textContent = duracaoVideo ? mmss(seg) : '–';
+
+    const r = await fetch('/api/frame', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ video: arquivo, segundo: seg, sid: idSessao }),
+    });
+    if (!r.ok) return mostrarErro('Não consegui ler uma imagem desse vídeo.');
+
+    const img = $('frameImg');
+    if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+    const url = URL.createObjectURL(await r.blob());
+    img.onload = () => { aplicarCaixas(); agendarPrevia(); };
+    img.dataset.url = url;
+    img.src = url;
+    if (img.complete) { aplicarCaixas(); agendarPrevia(); }
+  }
+
+  function aplicarCaixas() {
+    const palco = $('palco');
+    const L = palco.clientWidth, A = palco.clientHeight;
+    if (!L || !A) return;
+    [['topo', $('caixaTopo')], ['baixo', $('caixaBaixo')]].forEach(([nome, el]) => {
+      const a = recorte[nome];
+      el.style.left = (a.x * L) + 'px';
+      el.style.top = (a.y * A) + 'px';
+      el.style.width = (a.w * L) + 'px';
+      el.style.height = (a.h * A) + 'px';
+    });
+  }
+
+  function ligarArraste(el, nome) {
+    let modo = null, px = 0, py = 0, inicial = null;
+    el.addEventListener('pointerdown', (e) => {
+      modo = e.target.classList.contains('alca') ? 'tamanho' : 'mover';
+      px = e.clientX; py = e.clientY;
+      inicial = Object.assign({}, recorte[nome]);
+      el.classList.add('mexendo');
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      e.preventDefault(); e.stopPropagation();
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!modo) return;
+      const palco = $('palco');
+      const L = palco.clientWidth, A = palco.clientHeight;
+      if (!L || !A) return;
+      const dx = (e.clientX - px) / L, dy = (e.clientY - py) / A;
+      const a = recorte[nome];
+      if (modo === 'mover') {
+        a.x = Math.max(0, Math.min(1 - inicial.w, inicial.x + dx));
+        a.y = Math.max(0, Math.min(1 - inicial.h, inicial.y + dy));
+      } else {
+        a.w = Math.max(0.05, Math.min(1 - inicial.x, inicial.w + dx));
+        a.h = Math.max(0.05, Math.min(1 - inicial.y, inicial.h + dy));
+      }
+      aplicarCaixas();
+      e.preventDefault();
+    });
+    const soltar = (e) => {
+      if (!modo) return;
+      modo = null;
+      el.classList.remove('mexendo');
+      try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+      agendarPrevia();
+    };
+    el.addEventListener('pointerup', soltar);
+    el.addEventListener('pointercancel', soltar);
+    el.addEventListener('lostpointercapture', soltar);
+  }
+
+  ligarArraste($('caixaTopo'), 'topo');
+  ligarArraste($('caixaBaixo'), 'baixo');
+  window.addEventListener('resize', aplicarCaixas);
+
+  const PRESETS = {
+    se: { x: 0.015, y: 0.02, w: 0.30, h: 0.34 },
+    sd: { x: 0.675, y: 0.02, w: 0.30, h: 0.34 },
+    ie: { x: 0.015, y: 0.64, w: 0.30, h: 0.34 },
+    id: { x: 0.675, y: 0.64, w: 0.30, h: 0.34 },
+  };
+  document.querySelectorAll('[data-preset]').forEach((b) => {
+    b.addEventListener('click', () => {
+      Object.assign(recorte.topo, PRESETS[b.dataset.preset]);
+      aplicarCaixas(); agendarPrevia();
+    });
+  });
+
+  $('btnAreaCheia').addEventListener('click', () => {
+    Object.assign(recorte.baixo, { x: 0, y: 0, w: 1, h: 1 });
+    aplicarCaixas(); agendarPrevia();
+  });
+
+  $('proporcaoTopo').addEventListener('input', () => {
+    recorte.proporcaoTopo = Number($('proporcaoTopo').value) / 100;
+    $('proporcaoTxt').textContent = $('proporcaoTopo').value + '%';
+    agendarPrevia();
+  });
+  $('espessuraLinha').addEventListener('input', () => {
+    recorte.linha.espessura = Number($('espessuraLinha').value);
+    $('linhaTxt').textContent = recorte.linha.espessura ? recorte.linha.espessura + 'px' : 'off';
+    agendarPrevia();
+  });
+  $('corLinha').addEventListener('input', () => {
+    recorte.linha.cor = $('corLinha').value;
+    if (!recorte.linha.espessura) {
+      recorte.linha.espessura = 8;
+      $('espessuraLinha').value = 8;
+      $('linhaTxt').textContent = '8px';
+    }
+    agendarPrevia();
+  });
+
+  let esperandoFrame = null;
+  $('tempoFrame').addEventListener('input', () => {
+    $('tempoFrameTxt').textContent = duracaoVideo ? mmss(segundoDoSlider()) : '–';
+    clearTimeout(esperandoFrame);
+    esperandoFrame = setTimeout(carregarFrame, 260);
+  });
+
+  // desenhar a area direto na imagem
+  let desenhando = false, inicioDesenho = null;
+
+  function modoDesenho(ligar) {
+    desenhando = ligar;
+    $('palco').style.cursor = ligar ? 'crosshair' : '';
+    $('caixaTopo').style.pointerEvents = ligar ? 'none' : '';
+    $('caixaBaixo').style.pointerEvents = ligar ? 'none' : '';
+    $('btnDesenhar').textContent = ligar ? '✏️ Arraste em cima da área...'
+      : (formato === 'split' ? '✏️ Desenhar a área da pessoa' : '✏️ Desenhar a área do jogo');
+  }
+
+  $('btnDesenhar').addEventListener('click', () => modoDesenho(!desenhando));
+
+  $('palco').addEventListener('pointerdown', (e) => {
+    if (!desenhando) return;
+    const r = $('palco').getBoundingClientRect();
+    inicioDesenho = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+    $('palco').setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  $('palco').addEventListener('pointermove', (e) => {
+    if (!desenhando || !inicioDesenho) return;
+    const r = $('palco').getBoundingClientRect();
+    const x2 = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    const y2 = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+    // no split desenha a pessoa; no foco desenha a area do jogo
+    const alvo = formato === 'split' ? recorte.topo : recorte.baixo;
+    alvo.x = Math.min(inicioDesenho.x, x2);
+    alvo.y = Math.min(inicioDesenho.y, y2);
+    alvo.w = Math.max(0.04, Math.abs(x2 - inicioDesenho.x));
+    alvo.h = Math.max(0.04, Math.abs(y2 - inicioDesenho.y));
+    aplicarCaixas();
+  });
+  $('palco').addEventListener('pointerup', (e) => {
+    if (!desenhando) return;
+    inicioDesenho = null;
+    try { $('palco').releasePointerCapture(e.pointerId); } catch (_) {}
+    modoDesenho(false);
+    agendarPrevia();
+  });
+
+  // previa ao vivo
+  let previaPendente = null, previaRodando = false;
+
+  async function atualizarPrevia() {
+    if (!arquivo || !$('editor').classList.contains('ativo') || previaRodando) return;
+    previaRodando = true;
+    const caixa = $('previaCaixa');
+    const antiga = caixa.querySelector('img');
+    if (!antiga) caixa.innerHTML = '<div class="previa-vazia">montando a prévia...</div>';
+    else antiga.style.opacity = '.45';
+
+    try {
+      const r = await fetch('/api/previa', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video: arquivo, segundo: segundoDoSlider(), formato, recorte, sid: idSessao }),
+      });
+      if (!r.ok) throw new Error('falhou');
+      const url = URL.createObjectURL(await r.blob());
+      const img = document.createElement('img');
+      img.onload = () => URL.revokeObjectURL(url);
+      img.src = url;
+      caixa.innerHTML = '';
+      caixa.appendChild(img);
+    } catch (_) {
+      caixa.innerHTML = '<div class="previa-vazia">não consegui montar a prévia</div>';
+    } finally { previaRodando = false; }
+  }
+
+  function agendarPrevia() {
+    clearTimeout(previaPendente);
+    previaPendente = setTimeout(atualizarPrevia, 420);
+  }
+
+  // ---------------------------------------------------------- etapa 3
+
+  document.querySelectorAll('.chip').forEach((c) => {
+    c.addEventListener('click', () => {
+      const campo = $('descricao');
+      const atual = campo.value.trim();
+      const novo = c.dataset.texto;
+      campo.value = atual ? (atual.indexOf(novo) >= 0 ? atual : atual + ', ' + novo) : novo;
+      c.classList.add('ativo');
+      lerDescricao();
+    });
+  });
+
+  let lendo = null;
+  function lerDescricao() {
+    atualizarEtapas();
+    clearTimeout(lendo);
+    lendo = setTimeout(async () => {
+      const texto = $('descricao').value.trim();
+      if (!texto) { $('lidoComo').textContent = ''; return; }
+      try {
+        const r = await fetch('/api/entender', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ descricao: texto }),
+        }).then((x) => x.json());
+        $('lidoComo').innerHTML = '→ Entendi assim: <b style="color:var(--texto)">' + escapar(r.resumo) + '</b>' +
+          (r.termos && r.termos.length
+            ? '<br>→ Vou dar mais nota pra trechos que falem de: <b style="color:var(--texto)">' + escapar(r.termos.join(', ')) + '</b>'
+            : '');
+      } catch (_) { $('lidoComo').textContent = ''; }
+    }, 450);
+  }
+  $('descricao').addEventListener('input', lerDescricao);
+
+  // ---------------------------------------------------------- processar
+
+  $('btnProcessar').addEventListener('click', () => {
+    if (!arquivo) return;
+    const faixa = $('duracao').value.split('-');
+
+    const corpo = {
+      video: arquivo,
+      formato,
+      descricao: $('descricao').value.trim(),
+      legendar: $('legendar').checked && formato !== 'original',
+      textoGancho: $('textoGancho').checked,
+      detectarWebcam: $('detectarWebcam').checked,
+      detectarMomentos: $('detectarMomentos').checked,
+      quantidade: Number($('quantidade').value),
+      minDur: Number(faixa[0]),
+      maxDur: Number(faixa[1]),
+      modelo: $('modelo').value,
+      qualidade: $('qualidade').value,
+      ordem: $('ordem').value,
+      idioma: 'pt',
+      recorte,
+      margemLegenda: Number($('margemLegenda').value) || 0,
+      tamanhoLegenda: Number($('tamanhoLegenda').value) || 78,
+      usarIA: !!$('chaveIA').value.trim(),
+      chaveIA: $('chaveIA').value.trim(),
+    };
+
+    $('fluxo').style.display = 'none';
+    $('resultado').classList.remove('ativo');
+    $('listaClipes').innerHTML = '';
+    $('progresso').classList.add('ativo');
+    $('registro').innerHTML = '';
+    esconderErro();
+
+    fetch('/api/processar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo),
+    }).then((x) => x.json()).then((r) => ouvir(r.id));
+  });
+
+  const NOMES_ETAPA = {
+    lendo: 'Abrindo o vídeo', audio: 'Separando o áudio',
+    transcricao: 'Ouvindo e transcrevendo', analise: 'Achando os melhores momentos',
+    cortando: 'Gerando os clipes', pronto: 'Pronto!',
+  };
+
+  let fonteEventos = null;
+
+  function ouvir(id) {
+    if (fonteEventos) fonteEventos.close();
+    fonteEventos = new EventSource('/api/eventos?id=' + id);
+
+    fonteEventos.onmessage = (ev) => {
+      const d = JSON.parse(ev.data);
+      if (d.tipo === 'progresso') {
+        $('barra').style.width = d.pct + '%';
+        $('pctTexto').textContent = Math.round(d.pct) + '%';
+        $('etapaTexto').textContent = NOMES_ETAPA[d.etapa] || 'Processando';
+        registrar(d.msg);
+      }
+      else if (d.tipo === 'info') registrar('Vídeo de ' + d.duracaoTexto + ' · ' + d.largura + 'x' + d.altura);
+      else if (d.tipo === 'aviso') registrar('• ' + d.msg);
+      else if (d.tipo === 'cortes') registrar('Escolhi ' + d.cortes.length + ' trechos.');
+      else if (d.tipo === 'clipe-pronto') mostrarClipe(d.clipe);
+      else if (d.tipo === 'fim') {
+        pastaSaida = d.pasta;
+        $('progresso').classList.remove('ativo');
+        $('tituloResultado').textContent = d.clipes.length + ' cortes prontos';
+        $('resultado').classList.add('ativo');
+        fonteEventos.close();
+      }
+      else if (d.tipo === 'erro') {
+        $('progresso').classList.remove('ativo');
+        $('fluxo').style.display = '';
+        mostrarErro(d.msg);
+        fonteEventos.close();
+      }
+    };
+  }
+
+  function registrar(msg) {
+    if (!msg) return;
+    const r = $('registro');
+    const ultima = r.lastElementChild;
+    const corta = (s) => s.replace(/[\d:%]+/g, '').trim();
+    if (ultima && corta(ultima.textContent) === corta(msg)) ultima.textContent = msg;
+    else { const d = document.createElement('div'); d.textContent = msg; r.appendChild(d); }
+    r.scrollTop = r.scrollHeight;
+  }
+
+  // ---------------------------------------------------------- resultado
+
+  function mostrarClipe(c) {
+    $('resultado').classList.add('ativo');
+    const div = document.createElement('div');
+    div.className = 'clipe' + (formato === 'original' ? ' horizontal' : '');
+
+    const src = '/arquivo?p=' + encodeURIComponent(c.arquivo);
+    const capa = c.miniatura ? '/arquivo?p=' + encodeURIComponent(c.miniatura) : '';
+    const motivos = (c.motivos || []).map((m) =>
+      '<span class="motivo' + (m.pontos < 0 ? ' ruim' : '') + '">' + escapar(m.fator) + '</span>').join('');
+    const alternativos = (c.titulos || []).slice(1);
+    const alts = alternativos.length
+      ? '<div class="titulos-alt">' + alternativos.map((x) =>
+          '<button class="titulo-alt" data-copiar="' + escapar(x.texto) + '">' + escapar(x.texto) + '</button>').join('') + '</div>'
+      : '';
+    const nota = c.observacao ? '<div class="observacao">ℹ ' + escapar(c.observacao) + '</div>' : '';
+
+    div.innerHTML =
+      '<video src="' + src + '" ' + (capa ? 'poster="' + capa + '"' : '') + ' controls preload="none"></video>' +
+      '<div class="clipe-corpo">' +
+        '<div class="clipe-topo">' +
+          '<span class="clipe-num">CLIPE ' + c.numero + '</span>' +
+          '<span class="nota ' + c.rotulo.cor + '">' + c.nota + '/99 · ' + escapar(c.rotulo.texto) + '</span>' +
+        '</div>' +
+        '<div class="clipe-titulo">' + escapar(c.titulo) + '</div>' +
+        '<div class="clipe-tempo">⏱ ' + c.inicioTexto + ' → ' + c.fimTexto + '  ·  ' + c.duracao + 's  ·  ' + c.tamanhoMb + ' MB</div>' +
+        alts + nota +
+        '<div class="motivos">' + motivos + '</div>' +
+        '<div class="transcricao">' + escapar(c.texto) + '</div>' +
+        '<div class="clipe-botoes">' +
+          '<button class="btn mini" data-abrir="' + escapar(c.arquivo) + '">Abrir</button>' +
+          '<button class="btn mini" data-copiar="' + escapar(c.titulo) + '">Copiar título</button>' +
+        '</div>' +
+      '</div>';
+
+    div.querySelector('.transcricao').addEventListener('click', function () { this.classList.toggle('aberta'); });
+    div.querySelector('[data-abrir]').addEventListener('click', async function () {
+      // No PC local isso tambem abre o Explorer com o arquivo selecionado.
+      // Em qualquer lugar (inclusive celular), abre/baixa o video numa aba nova.
+      const r = await fetch('/api/abrir', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caminho: this.dataset.abrir }),
+      }).then((x) => x.json()).catch(() => null);
+      if (r && r.url) window.open(r.url, '_blank');
+    });
+    div.querySelectorAll('[data-copiar]').forEach((b) => {
+      b.addEventListener('click', function () {
+        navigator.clipboard.writeText(this.dataset.copiar);
+        const antes = this.textContent;
+        this.textContent = 'Copiado!';
+        setTimeout(() => { this.textContent = antes; }, 1400);
+      });
+    });
+
+    $('listaClipes').appendChild(div);
+  }
+
+  $('btnPasta').addEventListener('click', () => {
+    fetch('/api/abrir', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caminho: pastaSaida }),
+    });
+  });
+
+  $('btnNovo').addEventListener('click', () => {
+    $('resultado').classList.remove('ativo');
+    $('listaClipes').innerHTML = '';
+    $('fluxo').style.display = '';
+    $('barra').style.width = '0%';
+  });
+
+  atualizarEtapas();
+})();
+</script>
+</body>
+</html>

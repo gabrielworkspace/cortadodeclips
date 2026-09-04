@@ -1,0 +1,32 @@
+# Sobe o Cortador Automatico num container, com disco persistente.
+# Uso:
+#   1. copie .env.example para .env e preencha AUTH_SENHA
+#   2. docker compose up -d --build
+#   3. abra http://localhost:8080 (ou http://IP-DA-MAQUINA:8080 de outro aparelho)
+#
+# Pra rodar num servidor de verdade (Fly.io, Railway, VPS), veja DEPLOY.md.
+services:
+  cortador:
+    build:
+      context: .
+      args:
+        MODELO_WHISPER: ${MODELO_WHISPER:-small}
+    ports:
+      - "${PORTA_EXTERNA:-8080}:8080"
+    environment:
+      AUTH_SENHA: ${AUTH_SENHA:?defina uma senha em .env - sem ela o servidor fica aberto pra qualquer um}
+      NUM_THREADS: ${NUM_THREADS:-2}
+      QUALIDADE_PADRAO: ${QUALIDADE_PADRAO:-alta}
+      LIMITE_UPLOAD_MB: ${LIMITE_UPLOAD_MB:-8192}
+    volumes:
+      - dados:/dados
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/').then(r=>process.exit(0)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  dados:

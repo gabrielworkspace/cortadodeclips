@@ -1,0 +1,15 @@
+{
+  "name": "cortador-automatico",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Transforma videos longos em cortes virais para TikTok, Shorts e Reels",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
+    "zod": "^4.5.4"
+  }
+}

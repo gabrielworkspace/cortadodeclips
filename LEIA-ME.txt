@@ -1,0 +1,227 @@
+===========================================================
+  CORTADOR AUTOMÁTICO
+  Vídeo longo entra, cortes prontos pra Reels/TikTok/Shorts saem
+===========================================================
+
+
+COMO USAR (o dia a dia)
+-----------------------
+
+1. Dê dois cliques em:   iniciar.bat
+
+2. Vai abrir uma janela preta (deixe ela aberta!) e, logo depois,
+   a janela do programa.
+
+3. Arraste seu vídeo pra dentro da janela, ou clique pra escolher.
+
+4. Escolha como você quer os cortes e clique em
+   "Analisar e gerar os cortes".
+
+5. Espere. Ele vai:
+      - separar o áudio
+      - ouvir e transcrever o vídeo inteiro
+      - achar os melhores momentos
+      - cortar, enquadrar em 9:16 e gravar a legenda
+
+6. No fim aparecem os clipes na tela, cada um com:
+      - o vídeo pronto pra assistir ali mesmo
+      - nota de engajamento de 0 a 100
+      - título sugerido
+      - o minuto exato de onde ele saiu do vídeo original
+      - o porquê de ter pontuado
+      - hashtags
+
+7. Os arquivos ficam na pasta   saida\
+
+
+QUANTO TEMPO DEMORA
+-------------------
+
+  Vídeo de 10 min  ->  uns 4 minutos
+  Vídeo de 30 min  ->  uns 12 minutos
+  Vídeo de 60 min  ->  uns 25 minutos
+
+A parte demorada é a transcrição. Se rodar o MESMO vídeo de novo,
+ele reaproveita a transcrição e fica quase instantâneo — bom pra
+testar outro formato ou outra quantidade de cortes.
+
+
+O QUE CADA OPÇÃO FAZ
+--------------------
+
+FORMATO
+  Split (rosto em cima, jogo embaixo)   <- o padrão
+      O formato clássico de corte de streamer: sua webcam ocupa a
+      parte de cima e o gameplay a de baixo, com a legenda por cima.
+      Você marca na tela onde fica cada coisa (veja mais abaixo).
+
+  Vertical 9:16 (corta as laterais)
+      Preenche a tela toda do celular. Use quando a pessoa
+      estiver mais ou menos no centro da imagem.
+
+  Vertical 9:16 (fundo borrado)
+      Mostra o vídeo inteiro no meio, com o fundo borrado em cima
+      e embaixo. Use quando cortar as laterais estragaria a cena.
+
+  Manter o formato original
+      Só fatia o vídeo, sem mexer no enquadramento. Sem legenda,
+      esse modo copia o vídeo bit a bit: ZERO perda de qualidade
+      e sai em segundos.
+
+QUALIDADE DO VÍDEO
+  Máxima  - CRF 15, escala lanczos, áudio 256k. Sem perda visível.
+            É o padrão. Renderiza mais devagar.
+  Alta    - CRF 18. Diferença imperceptível, cerca de 2x mais rápida.
+  Rápida  - CRF 23. Só se estiver com pressa ou sem espaço.
+
+  Obs: sempre que o vídeo é reenquadrado (split, vertical, blur) ou
+  ganha legenda queimada, ele precisa ser recodificado - não existe
+  como desenhar por cima sem regravar. No Máxima essa regravação é
+  visualmente transparente. Se você quer o arquivo intocado mesmo,
+  use "Manter o formato original" sem legenda: aí é cópia exata.
+
+
+AJUSTE DO ENQUADRAMENTO (formato Split)
+---------------------------------------
+
+Depois de escolher o vídeo, aparece um frame dele com duas caixas:
+
+  ROSTO (azul)  - arraste em cima da sua webcam
+  JOGO  (verde) - arraste em cima da área do jogo
+
+Arraste pelo meio da caixa pra mover, e puxe o quadradinho do canto
+pra mudar o tamanho. Tem também botões de atalho pros 4 cantos, caso
+sua webcam fique num deles (que é o normal).
+
+  Momento do vídeo  - troca o frame que aparece, caso o começo
+                      do vídeo seja uma tela de abertura
+  Altura do rosto   - quanto da tela o rosto ocupa (padrão 32%)
+  Altura da legenda - sobe ou desce a legenda na tela
+
+Clique em "Ver prévia" pra ver exatamente como vai ficar o corte
+ANTES de processar tudo. Vale sempre fazer isso na primeira vez com
+um canal novo - evita gerar 8 clipes com o enquadramento errado.
+
+O ajuste vale pra todos os cortes daquele vídeo.
+
+
+QUANDO ELE APARECE EM TELA CHEIA
+--------------------------------
+
+Muito streamer alterna: às vezes é webcam pequena + gameplay, às vezes
+ele joga a cara em tela cheia. Se o programa aplicasse o split nesses
+trechos, ele pegaria dois pedaços do rosto e empilharia um em cima do
+outro - o rosto sairia cortado duas vezes.
+
+Por isso existe a opção "Detectar quando ele aparece em tela cheia",
+que já vem ligada. Antes de gerar cada clipe, o programa olha três
+instantes daquele trecho e mede se a moldura da webcam está mesmo ali.
+Se não estiver, ele gera aquele clipe em vertical simples em vez de
+split, e escreve o motivo no card do clipe.
+
+Se algum clipe sair errado mesmo assim, é porque o trecho muda de
+layout no meio - nesse caso o card avisa "O layout muda no meio desse
+trecho". Aí o melhor é cortar esse trecho na mão no editor.
+
+QUANTIDADE
+  Quantos cortes gerar. Ele sempre pega os de maior nota.
+
+DURAÇÃO
+  A faixa de tamanho de cada corte. Ele sempre termina no fim de
+  uma frase, nunca no meio de uma palavra.
+
+QUALIDADE DA TRANSCRIÇÃO
+  Rápida       - 2x mais veloz, erra mais palavra
+  Equilibrada  - o padrão, recomendado
+  Melhor       - 3x mais lenta, mais precisa
+
+LEGENDA
+  Grava a legenda no vídeo, estilo Shorts: a palavra que está
+  sendo falada fica amarela. Também gera um arquivo .srt separado,
+  caso você prefira legendar por conta no editor.
+
+
+A NOTA DE ENGAJAMENTO
+---------------------
+
+De 0 a 100. Ela é calculada aqui na sua máquina, olhando coisas
+que fazem um corte segurar o espectador:
+
+  + Gancho na abertura ("o segredo é", "o maior erro", "ninguém
+    te conta", "presta atenção", "se você...")
+  + Promete revelar algo
+  + Tem virada de raciocínio
+  + Traz número ou resultado concreto
+  + Carga emocional
+  + Faz pergunta pro espectador
+  + Conta história pessoal
+  + Entrega algo aplicável
+  + Voz com energia e variação
+  + Ritmo de fala bom
+  + Fecha a ideia por completo
+
+  - Começa no meio do assunto ("então...", "mas aí...")
+  - Muito vício de linguagem ("né", "tipo", "assim")
+  - Repete muito as mesmas palavras
+  - Áudio confuso no trecho
+
+  Acima de 82 = Altíssimo   68 a 81 = Alto
+  54 a 67     = Médio       abaixo de 54 = Baixo
+
+Ela é um bom filtro, não uma bola de cristal. Serve pra você olhar
+primeiro os de nota alta em vez de assistir 30 minutos inteiros.
+
+
+OPCIONAL: DEIXAR A IA ESCOLHER
+------------------------------
+
+Em "Opções avançadas" tem um campo de chave da API da Anthropic.
+Se você colar uma chave ali, a Claude lê a transcrição inteira e
+escolhe os trechos ela mesma — entende ironia, contexto e piada,
+coisa que a análise local não pega.
+
+Sem chave, tudo funciona normal com a análise local, de graça e
+sem internet. A chave é opcional.
+
+Pra pegar uma chave: console.anthropic.com
+
+
+O QUE VAI PRA PASTA saida\
+--------------------------
+
+Cada rodada cria uma pasta com o nome do vídeo e a data:
+
+  clipe-01-titulo-do-corte.mp4   o vídeo pronto pra postar
+  clipe-01-titulo-do-corte.srt   a legenda separada
+  clipe-01-titulo-do-corte.jpg   a miniatura
+  RELATORIO.txt                  tudo em texto, fácil de ler
+  relatorio.json                 os mesmos dados, pra programar em cima
+
+
+SE DER PROBLEMA
+---------------
+
+"Não achei o ffmpeg"
+    Rode o instalar.bat de novo.
+
+"faster-whisper não instalado"
+    Rode o instalar.bat de novo.
+
+"Não achei o arquivo" ao arrastar o vídeo
+    O navegador não entrega o caminho completo por segurança.
+    Ele procura em Downloads, Vídeos, Área de Trabalho e Documentos.
+    Se o vídeo estiver em outro lugar, clique na área pra escolher
+    pelo Windows — aí funciona de qualquer pasta.
+
+"Não encontrei fala nenhuma"
+    O vídeo está sem áudio ou só tem música.
+
+A janela fechou sozinha
+    Abra o iniciar.bat de novo. A janela preta precisa ficar aberta.
+
+Quer liberar espaço
+    Pode apagar tudo dentro da pasta  trabalho\  — é só cache.
+    (Vai perder o reaproveitamento da transcrição, só isso.)
+
+
+===========================================================
