@@ -285,9 +285,13 @@ async function processar(opcoes, avisar) {
       const d = await media.detectarWebcam(video, c.inicio, c.duracao, opcoes.recorte.topo);
 
       if (!d.temWebcam) {
-        formatoDoClipe = opcoes.formatoSemWebcam || 'vertical';
-        observacao = 'Aqui ele aparece em tela cheia, sem webcam separada — usei enquadramento simples.';
-        avisar({ tipo: 'aviso', msg: 'Clipe ' + (i + 1) + ': sem webcam separada nesse trecho, saiu em vertical.' });
+        // 'blur' e nao 'vertical': quando ele esta em tela cheia, o rosto ja
+        // ocupa o quadro inteiro. Cortar as laterais pra encaixar em 9:16
+        // jogaria fora quase 70% da largura e deixaria o rosto gigante e
+        // cortado. O fundo borrado mostra a cena inteira, sem cortar nada.
+        formatoDoClipe = opcoes.formatoSemWebcam || 'blur';
+        observacao = 'Aqui ele aparece em tela cheia, sem webcam separada — mostrei o vídeo inteiro, sem cortar.';
+        avisar({ tipo: 'aviso', msg: 'Clipe ' + (i + 1) + ': tela cheia nesse trecho, mostrei o vídeo inteiro sem cortar.' });
       } else if (d.misto) {
         observacao = 'O layout muda no meio desse trecho — confira o resultado.';
       }

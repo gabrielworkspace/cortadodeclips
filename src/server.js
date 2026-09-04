@@ -437,6 +437,20 @@ const servidor = http.createServer(async (req, res) => {
       }
     }
 
+    // Procura a webcam sozinho. Marcar essa caixa no canto errado estraga
+    // todos os clipes de uma vez e em silencio, entao vale tentar adivinhar
+    // e deixar a pessoa so confirmar na previa.
+    if (rota === '/api/achar-webcam' && req.method === 'POST') {
+      const corpo = await lerCorpo(req);
+      if (!corpo.video || !fs.existsSync(corpo.video)) return json(res, 400, { erro: 'video nao encontrado' });
+      try {
+        const achado = await media.acharWebcam(corpo.video, Number(corpo.duracao) || 0);
+        return json(res, 200, achado || { achou: false });
+      } catch (e) {
+        return json(res, 200, { achou: false, erro: e.message });
+      }
+    }
+
     // Frame cru do video, pro usuario marcar onde esta a webcam e o jogo.
     // O id de sessao evita que a previa de uma pessoa sobrescreva a da outra
     // quando o servidor atende mais de um navegador ao mesmo tempo.

@@ -392,6 +392,9 @@
       </div>
 
       <div class="editor" id="editor">
+        <div id="avisoWebcam" style="display:none; font-size:12.5px; line-height:1.45;
+             background:rgba(56,189,248,.09); border:1px solid #23506b; color:#7dd3fc;
+             padding:9px 12px; border-radius:9px; margin-bottom:13px"></div>
         <div class="editor-grade">
           <div>
             <div id="palco">
@@ -447,6 +450,14 @@
         <span>Detectar quando ele aparece em tela cheia
           <span style="color:var(--suave)">— nesses trechos não usa o split, pra não cortar o rosto em dois</span></span>
       </label>
+
+      <div id="linhaSemWebcam" style="margin-top:11px; margin-left:25px">
+        <label class="rotulo" for="formatoSemWebcam">E nesses trechos de tela cheia, mostrar assim:</label>
+        <select id="formatoSemWebcam" style="max-width:340px">
+          <option value="blur" selected>Vídeo inteiro, com fundo borrado — não corta nada</option>
+          <option value="vertical">Preencher a tela — corta as laterais e amplia</option>
+        </select>
+      </div>
 
     </div>
   </div>
@@ -906,7 +917,43 @@
   function mostrarEditor() {
     const liga = precisaEditor() && !!arquivo;
     $('editor').classList.toggle('ativo', liga);
-    if (liga) carregarFrame();
+    if (liga) {
+      carregarFrame();
+      if (formato === 'split') acharWebcamSozinho();
+    }
+  }
+
+  // Procura a webcam sozinho e ja marca a caixa. Marcar no canto errado
+  // estraga todos os clipes de uma vez, e nao da pra esperar que a pessoa
+  // adivinhe - ela so precisa confirmar olhando a previa.
+  let jaProcurouWebcam = null;
+
+  async function acharWebcamSozinho() {
+    if (!arquivo || jaProcurouWebcam === arquivo) return;
+    jaProcurouWebcam = arquivo;
+
+    $('avisoWebcam').style.display = 'block';
+    $('avisoWebcam').textContent = 'Procurando a webcam no vídeo...';
+
+    try {
+      const r = await fetch('/api/achar-webcam', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video: arquivo, duracao: duracaoVideo }),
+      }).then((x) => x.json());
+
+      if (r && r.area) {
+        Object.assign(recorte.topo, r.area);
+        aplicarCaixas();
+        agendarPrevia();
+        $('avisoWebcam').innerHTML = 'Achei a webcam no <b>canto ' + escapar(r.canto) +
+          '</b> e já marquei. <b>Confira na prévia</b> — se estiver errado, use os atalhos de canto abaixo.';
+      } else {
+        $('avisoWebcam').innerHTML = 'Não consegui achar a webcam sozinho. ' +
+          '<b>Marque onde ela está</b> usando os atalhos de canto abaixo, e confira na prévia.';
+      }
+    } catch (_) {
+      $('avisoWebcam').style.display = 'none';
+    }
   }
 
   function segundoDoSlider() {
@@ -1157,6 +1204,7 @@
       legendar: $('legendar').checked && formato !== 'original',
       textoGancho: $('textoGancho').checked,
       detectarWebcam: $('detectarWebcam').checked,
+      formatoSemWebcam: $('formatoSemWebcam').value,
       detectarMomentos: $('detectarMomentos').checked,
       quantidade: Number($('quantidade').value),
       minDur: Number(faixa[0]),

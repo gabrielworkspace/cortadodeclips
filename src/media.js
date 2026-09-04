@@ -446,6 +446,141 @@ function medirBordaDaWebcam(buf, area) {
 }
 
 /**
+ * Mede so as bordas que ficam POR CIMA do video (as que nao encostam na beirada
+ * da tela), e devolve a mais fraca delas.
+ *
+ * Usar a borda mais fraca, e nao a mais forte, e o que separa uma webcam de
+ * verdade de um acaso: a janela da webcam tem moldura marcada em TODOS os lados
+ * que ficam sobre o gameplay. Um pedaco qualquer de cenario pode ter uma linha
+ * forte de um lado so - e essa, no minimo, cai fora.
+ */
+function forcaDaMolduraInteira(buf, area) {
+  const x0 = Math.round(area.x * AMOSTRA_L);
+  const y0 = Math.round(area.y * AMOSTRA_A);
+  const x1 = Math.round((area.x + area.w) * AMOSTRA_L);
+  const y1 = Math.round((area.y + area.h) * AMOSTRA_A);
+  if (x1 - x0 < 12 || y1 - y0 < 12) return null;
+
+  const salto = 3;
+  const margem = 4;   // encostado na beirada da tela nao conta como moldura
+  const bordas = [];
+
+  if (x0 > margem) bordas.push(diferencaEntreLinhas(buf, 'x', x0, y0 + 3, y1 - 3, salto));
+  if (x1 < AMOSTRA_L - margem) bordas.push(diferencaEntreLinhas(buf, 'x', x1, y0 + 3, y1 - 3, salto));
+  if (y0 > margem) bordas.push(diferencaEntreLinhas(buf, 'y', y0, x0 + 3, x1 - 3, salto));
+  if (y1 < AMOSTRA_A - margem) bordas.push(diferencaEntreLinhas(buf, 'y', y1, x0 + 3, x1 - 3, salto));
+
+  const validas = bordas.filter((v) => v != null);
+  if (validas.length < 2) return null;   // sem pelo menos 2 lados sobre o video, nao da pra afirmar nada
+
+  const referencias = [];
+  for (let f = 0.2; f <= 0.8; f += 0.15) {
+    const d1 = diferencaEntreLinhas(buf, 'x', Math.round(AMOSTRA_L * f), 20, AMOSTRA_A - 20, salto);
+    const d2 = diferencaEntreLinhas(buf, 'y', Math.round(AMOSTRA_A * f), 20, AMOSTRA_L - 20, salto);
+    if (d1 != null) referencias.push(d1);
+    if (d2 != null) referencias.push(d2);
+  }
+  const base = referencias.length
+    ? referencias.reduce((a, b) => a + b, 0) / referencias.length : 1;
+
+  return Math.min.apply(null, validas) / Math.max(1.5, base);
+}
+
+/** Mudanca media de cor entre dois frames, dentro de uma area. */
+function mudancaEntreFrames(b1, b2, area) {
+  const x0 = Math.round(area.x * AMOSTRA_L);
+  const y0 = Math.round(area.y * AMOSTRA_A);
+  const x1 = Math.round((area.x + area.w) * AMOSTRA_L);
+  const y1 = Math.round((area.y + area.h) * AMOSTRA_A);
+  let soma = 0, n = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * AMOSTRA_L + x) * 3;
+      soma += (Math.abs(b1[i] - b2[i]) + Math.abs(b1[i + 1] - b2[i + 1]) + Math.abs(b1[i + 2] - b2[i + 2])) / 3;
+      n++;
+    }
+  }
+  return n ? soma / n : 0;
+}
+
+/**
+ * Procura a webcam sozinho, varrendo os cantos do video.
+ *
+ * O sinal que funciona nao e a moldura (o HUD do jogo tem bordas retas tao
+ * fortes quanto) nem o tom de pele (cenario de Roblox e cheio de marrom que
+ * passa por pele). E a ESTABILIDADE NO TEMPO: entre dois momentos distantes do
+ * video o gameplay muda por completo, enquanto a webcam continua mostrando a
+ * mesma pessoa, no mesmo lugar, com o mesmo fundo. A janela da webcam e, de
+ * longe, a regiao que menos muda.
+ *
+ * Isso importa porque marcar essa caixa no canto errado estraga TODOS os
+ * clipes de uma vez, e em silencio: o programa recorta um pedaco de cenario
+ * pro topo e ainda conclui "ele esta em tela cheia" quando nao acha moldura.
+ *
+ * @returns {Promise<object|null>} { area, canto, estabilidade } ou null
+ */
+async function acharWebcam(video, duracao) {
+  const dur = duracao || 600;
+  // Bem espalhados de proposito: se os frames forem proximos, o gameplay
+  // tambem parece estavel e o sinal some.
+  const instantes = [0.15, 0.35, 0.55, 0.75, 0.9].map((f) => Math.max(1, dur * f));
+
+  const frames = [];
+  for (const t of instantes) {
+    try {
+      const buf = await amostrarFrame(video, t);
+      if (buf) frames.push(buf);
+    } catch (_) { /* um frame ruim nao invalida a busca */ }
+  }
+  if (frames.length < 3) return null;
+
+  function mudancaMedia(area) {
+    let soma = 0, pares = 0;
+    for (let i = 0; i < frames.length; i++) {
+      for (let j = i + 1; j < frames.length; j++) {
+        soma += mudancaEntreFrames(frames[i], frames[j], area);
+        pares++;
+      }
+    }
+    return pares ? soma / pares : 0;
+  }
+
+  // Referencia: o quanto a tela inteira muda entre esses mesmos momentos.
+  const geral = mudancaMedia({ x: 0, y: 0, w: 1, h: 1 });
+  if (geral < 5) return null;   // video praticamente parado: nao da pra concluir nada
+
+  const m = 0.005;
+  const tamanhos = [{ w: 0.18, h: 0.24 }, { w: 0.23, h: 0.30 }, { w: 0.28, h: 0.37 }, { w: 0.33, h: 0.44 }];
+  const cantos = [
+    { nome: 'superior esquerdo', x: () => m, y: () => m },
+    { nome: 'superior direito', x: (t) => 1 - t.w - m, y: () => m },
+    { nome: 'inferior esquerdo', x: () => m, y: (t) => 1 - t.h - m },
+    { nome: 'inferior direito', x: (t) => 1 - t.w - m, y: (t) => 1 - t.h - m },
+  ];
+
+  let melhor = null;
+  for (const c of cantos) {
+    for (const t of tamanhos) {
+      const area = { x: c.x(t), y: c.y(t), w: t.w, h: t.h };
+      const razao = mudancaMedia(area) / geral;   // quanto menor, mais estavel
+      if (!melhor || razao < melhor.razao) {
+        melhor = { area, canto: c.nome, razao };
+      }
+    }
+  }
+
+  // Precisa mudar bem menos que a tela toda pra ser webcam, e nao um pedaco
+  // de cenario que por acaso ficou parado.
+  if (!melhor || melhor.razao > 0.62) return null;
+
+  return {
+    area: melhor.area,
+    canto: melhor.canto,
+    estabilidade: Math.round((1 - melhor.razao) * 100),   // 0 a 100, quanto maior mais confianca
+  };
+}
+
+/**
  * Olha alguns instantes do trecho e diz se a webcam esta separada ali.
  * @returns {object} { temWebcam, forca, amostras }
  */
@@ -509,6 +644,7 @@ module.exports = {
   gerarMiniatura,
   gerarFrame,
   detectarWebcam,
+  acharWebcam,
   gerarPrevia,
   filtroDeFormato,
 };
