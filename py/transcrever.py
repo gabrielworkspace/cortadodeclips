@@ -46,7 +46,7 @@ def main():
         threads = max(1, (os.cpu_count() or 4) - 2)
 
     # MODELOS_DIR aponta pro modelo ja assado na imagem do container (o
-    # Dockerfile baixa na build). Sem isso, cada job baixaria ~500 MB de
+    # instalar.bat baixa uma vez). Sem isso, cada job baixaria ~500 MB de
     # novo do HuggingFace numa pasta que some a cada deploy.
     pasta_modelos = os.environ.get("MODELOS_DIR") or os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "modelos"

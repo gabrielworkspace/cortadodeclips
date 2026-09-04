@@ -3,7 +3,7 @@ node_modules/
 __pycache__/
 *.pyc
 
-# Modelo de transcricao (500 MB - baixa sozinho na primeira vez)
+# Modelo de transcricao (~2 GB - baixa sozinho na primeira vez)
 modelos/
 
 # Videos e arquivos gerados - nunca sobem pro repositorio
@@ -15,12 +15,11 @@ trabalho/
 .env
 *.key
 
+# Backups locais
+*.antigo
+*.bak
+
 # Lixo do sistema
 Thumbs.db
 desktop.ini
 .DS_Store
-para-huggingface/
-
-# Arquivos de deploy arquivados e backups locais
-_deploy-guardado/
-*.antigo

@@ -12,7 +12,7 @@ const RAIZ = path.join(__dirname, '..');
 const BAIXADOS = process.env.DADOS ? path.join(process.env.DADOS, 'baixados') : path.join(RAIZ, 'baixados');
 
 // Mesma historia do ffmpeg: o winget instala mas o PATH so vale em processo
-// novo. No Linux/container o Dockerfile poe o caminho certo em YTDLP_PATH.
+// novo. Da pra apontar um binario proprio pela variavel YTDLP_PATH.
 function acharYtDlp() {
   if (process.env.YTDLP_PATH) return [process.env.YTDLP_PATH];
 

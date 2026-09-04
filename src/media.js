@@ -8,7 +8,7 @@ const os = require('os');
 
 // No Windows o winget instala o ffmpeg mas o PATH so vale em processo novo,
 // entao procuramos nos lugares conhecidos do WinGet. No Linux/container o
-// Dockerfile ja deixa o binario certo numa variavel de ambiente ou no PATH.
+// Da pra apontar um binario proprio por variavel de ambiente ou pelo PATH.
 function acharBinario(nome) {
   const doAmbiente = process.env[nome.toUpperCase() + '_PATH'];
   if (doAmbiente) return [doAmbiente];

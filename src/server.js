@@ -588,7 +588,7 @@ function subir(porta, tentativas) {
         console.log('  No celular (mesma rede wi-fi):  http://' + ip + ':' + porta);
       }
     } else {
-      console.log('  Para abrir no celular, rode:  iniciar-no-celular.bat');
+      console.log('  Para abrir no celular na mesma rede, inicie com REDE=1.');
     }
 
     console.log('  Deixe esta janela preta aberta enquanto usa o programa.');
