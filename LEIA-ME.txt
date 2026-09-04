@@ -12,10 +12,16 @@ COMO USAR (o dia a dia)
 2. Vai abrir uma janela preta (deixe ela aberta!) e, logo depois,
    a janela do programa.
 
-3. Arraste seu vídeo pra dentro da janela, ou clique pra escolher.
+3. Cole o link do vídeo (YouTube, Kick, Twitch) ou clique pra
+   escolher um arquivo do computador.
 
-4. Escolha como você quer os cortes e clique em
-   "Analisar e gerar os cortes".
+4. O programa te leva por 3 telas, uma de cada vez:
+      1 - Vídeo          de onde ele vem
+      2 - Enquadramento  como a tela vai ficar
+      3 - O que cortar   que tipo de momento você quer
+
+   A barra de baixo mostra o resumo do que vai ser feito e o botão
+   pra continuar. Clique em "Gerar os cortes" no fim.
 
 5. Espere. Ele vai:
       - separar o áudio
@@ -28,8 +34,9 @@ COMO USAR (o dia a dia)
       - nota de engajamento de 0 a 100
       - título sugerido
       - o minuto exato de onde ele saiu do vídeo original
-      - o porquê de ter pontuado
-      - hashtags
+      - botão pra baixar o arquivo
+      - em "Ver detalhes": o porquê de ter pontuado, outros
+        títulos sugeridos e a fala do trecho
 
 7. Os arquivos ficam na pasta   saida\
 
@@ -50,20 +57,20 @@ O QUE CADA OPÇÃO FAZ
 --------------------
 
 FORMATO
-  Split (rosto em cima, jogo embaixo)   <- o padrão
-      O formato clássico de corte de streamer: sua webcam ocupa a
-      parte de cima e o gameplay a de baixo, com a legenda por cima.
-      Você marca na tela onde fica cada coisa (veja mais abaixo).
+  Rosto + jogo   <- o padrão
+      O formato clássico de corte de streamer: a webcam ocupa a
+      parte de cima e o gameplay a de baixo, com uma linha dividindo
+      as duas. Você marca na tela onde fica cada coisa (veja abaixo).
 
-  Vertical 9:16 (corta as laterais)
-      Preenche a tela toda do celular. Use quando a pessoa
-      estiver mais ou menos no centro da imagem.
+  Só uma área
+      Você marca um pedaço da tela e ele enquadra só aquilo.
+      Bom pra abertura de carta, onde o que importa é a mesa.
 
-  Vertical 9:16 (fundo borrado)
-      Mostra o vídeo inteiro no meio, com o fundo borrado em cima
-      e embaixo. Use quando cortar as laterais estragaria a cena.
+  Tela cheia
+      Corta as laterais e preenche a tela do celular. Use quando a
+      pessoa estiver mais ou menos no centro da imagem.
 
-  Manter o formato original
+  Não mexer
       Só fatia o vídeo, sem mexer no enquadramento. Sem legenda,
       esse modo copia o vídeo bit a bit: ZERO perda de qualidade
       e sai em segundos.
@@ -93,16 +100,18 @@ Arraste pelo meio da caixa pra mover, e puxe o quadradinho do canto
 pra mudar o tamanho. Tem também botões de atalho pros 4 cantos, caso
 sua webcam fique num deles (que é o normal).
 
-  Momento do vídeo  - troca o frame que aparece, caso o começo
-                      do vídeo seja uma tela de abertura
-  Altura do rosto   - quanto da tela o rosto ocupa (padrão 32%)
-  Altura da legenda - sobe ou desce a legenda na tela
+  Ver outro trecho   - troca o frame que aparece, caso o começo do
+                       vídeo seja uma tela de abertura. Tem atalho
+                       pro Começo, Meio e Fim.
+  Altura do rosto    - quanto da tela o rosto ocupa (padrão 32%)
+  Linha divisória    - grossura e cor da linha entre as duas partes
 
-Clique em "Ver prévia" pra ver exatamente como vai ficar o corte
-ANTES de processar tudo. Vale sempre fazer isso na primeira vez com
-um canal novo - evita gerar 8 clipes com o enquadramento errado.
+A prévia do lado mostra como o corte vai sair, e se atualiza sozinha
+conforme você mexe. Vale conferir na primeira vez com um canal novo -
+evita gerar 8 clipes com o enquadramento errado.
 
-O ajuste vale pra todos os cortes daquele vídeo.
+O ajuste vale pra todos os cortes daquele vídeo, e fica salvo pra
+próxima vez que você abrir o programa.
 
 
 QUANDO ELE APARECE EM TELA CHEIA
@@ -113,8 +122,8 @@ ele joga a cara em tela cheia. Se o programa aplicasse o split nesses
 trechos, ele pegaria dois pedaços do rosto e empilharia um em cima do
 outro - o rosto sairia cortado duas vezes.
 
-Por isso existe a opção "Detectar quando ele aparece em tela cheia",
-que já vem ligada. Antes de gerar cada clipe, o programa olha três
+Por isso existe a opção "Focar no rosto quando aparecer só a cara
+dele", que já vem ligada. Antes de gerar cada clipe, o programa olha três
 instantes daquele trecho e mede se a moldura da webcam está mesmo ali.
 Se não estiver, ele gera aquele clipe em vertical simples em vez de
 split, e escreve o motivo no card do clipe.
@@ -135,10 +144,14 @@ QUALIDADE DA TRANSCRIÇÃO
   Equilibrada  - o padrão, recomendado
   Melhor       - 3x mais lenta, mais precisa
 
-LEGENDA
-  Grava a legenda no vídeo, estilo Shorts: a palavra que está
-  sendo falada fica amarela. Também gera um arquivo .srt separado,
-  caso você prefira legendar por conta no editor.
+LEGENDA E GANCHO (no botão "Ajustes", no topo)
+  Gancho na tela  - um texto grande nos primeiros segundos, feito a
+                    partir da própria fala do trecho. Segura quem
+                    assiste sem som. Funciona mesmo com a legenda
+                    desligada.
+  Legenda         - grava a legenda no vídeo, estilo Shorts: a palavra
+                    que está sendo falada fica amarela. Também gera um
+                    arquivo .srt separado, pra legendar no editor.
 
 
 A NOTA DE ENGAJAMENTO
@@ -175,7 +188,7 @@ primeiro os de nota alta em vez de assistir 30 minutos inteiros.
 OPCIONAL: DEIXAR A IA ESCOLHER
 ------------------------------
 
-Em "Opções avançadas" tem um campo de chave da API da Anthropic.
+Em "Ajustes" (botão no topo) tem um campo de chave da API da Anthropic.
 Se você colar uma chave ali, a Claude lê a transcrição inteira e
 escolhe os trechos ela mesma — entende ironia, contexto e piada,
 coisa que a análise local não pega.

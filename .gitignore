@@ -19,3 +19,8 @@ trabalho/
 Thumbs.db
 desktop.ini
 .DS_Store
+para-huggingface/
+
+# Arquivos de deploy arquivados e backups locais
+_deploy-guardado/
+*.antigo

@@ -80,13 +80,25 @@ const ACIONAVEL = [
  */
 const GANCHO_KIDS = [
   /\bolha (o que|isso|s[oó]|a[ií]|esse|essa)\b/i, /\bn[aã]o acredito\b/i,
-  /\bvem comigo\b/i, /\badivinha\b/i, /\bchuta a[ií]\b/i, /\bchutem\b/i,
+  /\bvem comigo\b/i, /\badivinh\w*\b/i, /\bchut\w*\b/i,
   /\bvamos (abrir|tentar|ver)\b/i, /\bvou abrir\b/i, /\bo que ser[aá] que\b/i,
   /\bser[aá] que (vem|veio|vai|eu|ele)\b/i, /\bt[aá] vendo (isso|essa|esse)\b/i,
   /\bprimeira vez\b/i, /\bnunca vi\b/i, /\bimposs[ií]vel\b/i,
   /\bum em um milh[aã]o\b/i, /\bacabei de\b/i, /\bfinalmente\b/i,
   /\bmais rar[oa]\b/i, /\bmais car[oa]\b/i, /\bmelhor do jogo\b/i,
-  /\bvale a pena\b/i, /\bquanto (custa|vale|deu)\b/i, /\bdeu ruim\b/i,
+  /\bvale a pena\b/i, /\bquanto (custa|vale|deu|ser[aá])\b/i, /\bdeu ruim\b/i,
+
+  // O que mais prende crianca de 8 a 16 em video de jogo: a abertura em si,
+  // o momento da revelacao, e a comparacao "quem tem o melhor".
+  /\bvou (abrir|tentar|testar|comprar|gastar)\b/i,
+  /\bacabou de (vir|sair|aparecer)\b/i,
+  /\bveio (o|um|uma|meu)\b/i, /\bsaiu (o|um|uma)\b/i,
+  /\bconsegui (o|um|uma)\b/i, /\bpeguei (o|um|uma)\b/i,
+  /\bmais forte do (jogo|servidor)\b/i, /\bmais caro do (jogo|servidor)\b/i,
+  /\bquem (tem|ganha|vence)\b/i, /\bdesafio\b/i, /\bapost\w*\b/i,
+  /\bgastei\b/i, /\bpaguei\b/i, /\btroquei\b/i,
+  /\bninguem (tem|consegue|conseguiu)\b/i, /\bningu[eé]m (tem|consegue|conseguiu)\b/i,
+  /\bo [uú]ltimo\b/i, /\bfalta (s[oó]|um|uma)\b/i,
 ];
 
 const EMOCAO_KIDS = [

@@ -102,6 +102,122 @@ function frasesFortes(texto) {
   return avaliadas.filter((f) => f.texto.length >= 15).sort((a, b) => b.nota - a.nota);
 }
 
+// ---------------------------------------------------------------- gancho de tela
+
+/**
+ * O gancho que fica QUEIMADO nos primeiros segundos do video.
+ *
+ * Ele nao e um resumo nem uma frase da fala - e uma promessa. O publico aqui
+ * tem de 8 a 16 anos e rola o feed rapido: o que faz o dedo parar e uma
+ * LACUNA (algo que so fecha assistindo) grudada num objeto concreto que a
+ * crianca reconhece (ovo, pet, carta, robux). Frase copiada da fala nao
+ * funciona porque ninguem fala em gancho: "IHIHI VOCE E LOUCO" nao promete nada.
+ *
+ * Regra que nao se quebra: so promete o que o trecho realmente entrega.
+ */
+
+// Objetos que o publico desse nicho reconhece de cara
+const OBJETOS = [
+  [/\bovos?\b/i, 'OVO'],
+  [/\bpets?\b/i, 'PET'],
+  [/\bbrainrots?\b/i, 'BRAINROT'],
+  [/\bcartas?\b/i, 'CARTA'],
+  [/\bpacks?\b/i, 'PACK'],
+  [/\bcaixas?\b/i, 'CAIXA'],
+  [/\bba[uú]\b/i, 'BAÚ'],
+  [/\bskins?\b/i, 'SKIN'],
+  [/\bbichos?\b/i, 'BICHO'],
+  [/\bmuta[cç][aã]o\b/i, 'MUTAÇÃO'],
+  [/\brobux\b/i, 'ROBUX'],
+  [/\bitens?\b/i, 'ITEM'],
+  [/\bpr[eê]mios?\b/i, 'PRÊMIO'],
+];
+
+function objetoDoTrecho(texto) {
+  for (const [re, nome] of OBJETOS) if (re.test(texto)) return nome;
+  return null;
+}
+
+// Sinais de que algo ACONTECEU (a lacuna tem o que fechar)
+const ACONTECEU = /\b(veio|saiu|consegui|peguei|ganhei|abri|achei|encontrei|apareceu|caiu|deu)\b/i;
+const DEU_RUIM = /\b(perdi|perdeu|deu ruim|se ferrou|era ruim|n[aã]o valeu|pior|lixo|fraco)\b/i;
+const RARIDADE = /\b(mais rar[oa]|rar[oa]|lend[aá]ri[oa]|secret[oa]|m[ií]tic[oa]|exclusiv[oa]|melhor do jogo|mais car[oa])\b/i;
+const APOSTA = /\b(chut\w*|adivinh\w*|aposta\w*|quanto (voc[eê]|ser[aá]|acha)|voc[eê]s? acha|o que (voc[eê]s? )?acha)\b/i;
+
+/**
+ * Varias formas de dizer a mesma coisa. Postar 8 cortes com o gancho
+ * identico queima o formato - o feed repete e a pessoa passa direto.
+ * A escolha e por conteudo (nao sorteada) pra o mesmo trecho dar sempre
+ * o mesmo gancho quando reprocessado.
+ */
+const VARIANTES = {
+  aposta: ['CHUTA O QUE VEIO NESSE {OBJ}', 'ADIVINHA O QUE SAIU DESSE {OBJ}', 'O QUE VOCÊ ACHA QUE VEIO? 👀'],
+  apostaSemObj: ['CHUTA O QUE VEIO 👀', 'ADIVINHA O QUE SAIU 👀', 'VOCÊ NÃO VAI ACERTAR 👀'],
+  numero: ['{OBJ} DE {NUM} 🤯', 'GASTEI {NUM} NESSE {OBJ} 😱', '{NUM} EM UM {OBJ} SÓ 🤯'],
+  numeroSemObj: ['{NUM}?! OLHA ISSO 🤯', 'OLHA ESSE {NUM} 😱'],
+  raro: ['O {OBJ} MAIS RARO DO JOGO 🔥', 'ESSE {OBJ} É QUASE IMPOSSÍVEL 🔥', 'FINALMENTE ESSE {OBJ} 🔥'],
+  raroSemObj: ['ACHEI O MAIS RARO 🔥', 'ESSE É QUASE IMPOSSÍVEL 🔥'],
+  ruim: ['OLHA O QUE VEIO NESSE {OBJ} 😭', 'ABRI O {OBJ} E DEU RUIM 😭', 'NÃO ERA ISSO QUE EU QUERIA 😭'],
+  ruimSemObj: ['DEU MUITO RUIM 😭', 'NÃO ERA ISSO QUE EU QUERIA 😭'],
+  veio: ['OLHA O QUE VEIO NESSE {OBJ} 😱', 'ABRI O {OBJ} E OLHA ISSO 😱', 'ESPERA PRA VER ESSE {OBJ} 😱'],
+  temObj: ['ESSE {OBJ} ME SURPREENDEU 😱', 'PRECISA VER ESSE {OBJ} 👀', 'OLHA SÓ ESSE {OBJ} 😱'],
+  generico: ['OLHA O QUE ACONTECEU 😱', 'ESPERA PRA VER ISSO 👀', 'NÃO ACREDITEI NISSO 😱'],
+};
+
+/** Escolhe sempre a mesma variante pro mesmo trecho, mas espalha entre trechos. */
+function escolherVariante(lista, semente) {
+  let h = 0;
+  const s = String(semente || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return lista[h % lista.length];
+}
+
+/**
+ * @param {object} corte  { texto, inicio, ... }
+ * @returns {string} gancho curto pronto pra queimar na tela
+ */
+function gerarGanchoDeTela(corte) {
+  const texto = String(corte.texto || '');
+  const obj = objetoDoTrecho(texto);
+  const numeros = extrairNumeros(texto);
+  const numero = numeros.length ? numeros[0].texto.toUpperCase().replace(/\s+/g, ' ') : null;
+
+  // A semente mistura o inicio do trecho com o texto: trechos diferentes
+  // caem em variantes diferentes, e o mesmo trecho e sempre igual.
+  const semente = String(corte.inicio || 0) + '|' + texto.slice(0, 60);
+  const montar = (chave) => escolherVariante(VARIANTES[chave], semente)
+    .replace('{OBJ}', obj || '')
+    .replace('{NUM}', numero || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Ordem de prioridade = ordem de quanto cada estrutura segura o dedo.
+  // Cada uma so entra se o trecho REALMENTE tem o material.
+
+  // 1. Aposta: puxa comentario e faz esperar a resposta - o melhor pra retencao
+  if (APOSTA.test(texto)) return montar(obj ? 'aposta' : 'apostaSemObj');
+
+  // 2. Numero absurdo: choque imediato e concreto
+  if (numero) return montar(obj ? 'numero' : 'numeroSemObj');
+
+  // 3. Raridade: o que essa faixa etaria mais persegue no jogo
+  if (RARIDADE.test(texto)) return montar(obj ? 'raro' : 'raroSemObj');
+
+  // 4. Deu ruim: frustracao diverte e prende tanto quanto a vitoria
+  if (DEU_RUIM.test(texto)) return montar(obj ? 'ruim' : 'ruimSemObj');
+
+  // 5. Revelacao: a lacuna classica - so fecha assistindo
+  if (ACONTECEU.test(texto) && obj) return montar('veio');
+  if (obj) return montar('temObj');
+  if (ACONTECEU.test(texto)) return montar('generico');
+
+  // 6. Rede de seguranca: a frase mais forte do trecho, limpa e curta.
+  //    Pior que um template, melhor que nada - e nunca mente.
+  const fortes = frasesFortes(texto);
+  if (fortes.length) return cortarEm(fortes[0].texto, 46).toUpperCase() + ' 👀';
+  return montar('generico');
+}
+
 /** O assunto do corte: a palavra concreta mais repetida. */
 function extrairAssunto(texto) {
   const forte = texto.match(SUBSTANTIVO_FORTE);
@@ -301,4 +417,4 @@ function gerarCopy(corte, contextoDoVideo) {
   };
 }
 
-module.exports = { gerarCopy, gerarTitulos, gerarHashtags, montarLegenda };
+module.exports = { gerarCopy, gerarTitulos, gerarHashtags, montarLegenda, gerarGanchoDeTela };

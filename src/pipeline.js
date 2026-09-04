@@ -11,7 +11,7 @@ const media = require('./media');
 const legenda = require('./legenda');
 const momentos = require('./momentos');
 const { encontrarCortes, mmss } = require('./score');
-const { gerarCopy } = require('./copy');
+const { gerarCopy, gerarGanchoDeTela } = require('./copy');
 const { interpretar } = require('./intencao');
 
 const RAIZ = path.join(__dirname, '..');
@@ -279,19 +279,19 @@ async function processar(opcoes, avisar) {
     let formatoDoClipe = opcoes.formato || 'vertical';
     let observacao = null;
 
+    // Quando ele poe a cara em tela cheia, nao existe webcam separada pra
+    // recortar: o rosto JA e o video inteiro. Manter o split ali empilha dois
+    // pedacos do proprio rosto e ainda desenha uma linha no meio dele. Nesses
+    // trechos o certo e o oposto - foco so na cara, sem divisao nenhuma.
     if (formatoDoClipe === 'split' && opcoes.detectarWebcam !== false &&
         opcoes.recorte && opcoes.recorte.topo) {
       emitir(p0, 'cortando', 'Conferindo o enquadramento do clipe ' + (i + 1) + '...');
       const d = await media.detectarWebcam(video, c.inicio, c.duracao, opcoes.recorte.topo);
 
       if (!d.temWebcam) {
-        // 'blur' e nao 'vertical': quando ele esta em tela cheia, o rosto ja
-        // ocupa o quadro inteiro. Cortar as laterais pra encaixar em 9:16
-        // jogaria fora quase 70% da largura e deixaria o rosto gigante e
-        // cortado. O fundo borrado mostra a cena inteira, sem cortar nada.
-        formatoDoClipe = opcoes.formatoSemWebcam || 'blur';
-        observacao = 'Aqui ele aparece em tela cheia, sem webcam separada — mostrei o vídeo inteiro, sem cortar.';
-        avisar({ tipo: 'aviso', msg: 'Clipe ' + (i + 1) + ': tela cheia nesse trecho, mostrei o vídeo inteiro sem cortar.' });
+        formatoDoClipe = opcoes.formatoSemWebcam || 'vertical';
+        observacao = 'Aqui aparece só a cara dele — foquei no rosto, sem a divisão.';
+        avisar({ tipo: 'aviso', msg: 'Clipe ' + (i + 1) + ': só a cara nesse trecho, foquei no rosto sem divisão.' });
       } else if (d.misto) {
         observacao = 'O layout muda no meio desse trecho — confira o resultado.';
       }
@@ -314,7 +314,9 @@ async function processar(opcoes, avisar) {
         tamanho: opcoes.tamanhoLegenda || 78,
         margemBaixo: margemDaLegenda(opcoes, formatoDoClipe),
         incluirPalavras: querLegenda,
-        gancho: querGancho ? c.titulo : null,
+        // O gancho da TELA e diferente do titulo do post: ele precisa criar
+        // lacuna em 2 linhas, nao resumir o trecho.
+        gancho: querGancho ? gerarGanchoDeTela(c) : null,
         duracaoGancho: opcoes.duracaoGancho || 4,
         margemGancho: formatoDoClipe === 'split' ? 660 : 180,
       });

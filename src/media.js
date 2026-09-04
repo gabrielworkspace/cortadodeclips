@@ -585,29 +585,76 @@ async function acharWebcam(video, duracao) {
  * @returns {object} { temWebcam, forca, amostras }
  */
 async function detectarWebcam(video, inicio, duracao, area) {
-  const instantes = [inicio + duracao * 0.15, inicio + duracao * 0.5, inicio + duracao * 0.85];
-  const forcas = [];
+  // Aqui NAO da pra usar a moldura como sinal: em gameplay de Roblox a tela
+  // toda e cheia de linhas retas fortes (HUD, shop, inventario), entao a
+  // moldura da webcam nao se destaca e a medicao acusa "sem webcam" com a
+  // webcam na tela - estragando o corte.
+  //
+  // O sinal certo e o mesmo que acha a webcam: ESTABILIDADE. Dentro do trecho,
+  // a janelinha da webcam muda pouco (mesma pessoa, mesmo fundo) enquanto o
+  // gameplay muda muito. Se a regiao da webcam mudar tanto quanto o resto da
+  // tela, e porque nao tem webcam ali - o quadro inteiro virou a cara dele.
+  const instantes = [0.12, 0.35, 0.6, 0.85].map((f) => inicio + duracao * f);
 
+  const frames = [];
   for (const t of instantes) {
     try {
       const buf = await amostrarFrame(video, t);
-      if (!buf) continue;
-      const f = medirBordaDaWebcam(buf, area);
-      if (f != null) forcas.push(f);
+      if (buf) frames.push(buf);
     } catch (_) { /* um frame ruim nao invalida a analise */ }
   }
 
-  if (!forcas.length) return { temWebcam: true, forca: 0, amostras: 0 };
+  // Sem material pra decidir: assume o formato normal do canal, que e o que
+  // acerta na maioria dos trechos.
+  if (frames.length < 2) return { temWebcam: true, razao: null, amostras: frames.length };
 
-  // 1.55x a variacao normal da imagem ja e uma moldura bem marcada
-  const acimaDoLimiar = forcas.filter((f) => f >= 1.55).length;
-  const media = forcas.reduce((a, b) => a + b, 0) / forcas.length;
+  function mudancaMedia(alvo) {
+    let soma = 0, pares = 0;
+    for (let i = 0; i < frames.length; i++) {
+      for (let j = i + 1; j < frames.length; j++) {
+        soma += mudancaEntreFrames(frames[i], frames[j], alvo);
+        pares++;
+      }
+    }
+    return pares ? soma / pares : 0;
+  }
+
+  const geral = mudancaMedia({ x: 0, y: 0, w: 1, h: 1 });
+  // Cena parada (menu, pausa): nao da pra separar webcam de gameplay porque
+  // nada se move. Mantem o formato do canal.
+  if (geral < 4) return { temWebcam: true, razao: null, amostras: frames.length };
+
+  const naWebcam = mudancaMedia(area);
+  const razao = naWebcam / geral;
+
+  // Nenhum sinal sozinho e confiavel:
+  //  - a ESTABILIDADE falha quando o gameplay esta parado e ele gesticula
+  //    falando: a webcam muda mais que a tela e parece nao existir;
+  //  - a MOLDURA falha porque o HUD do jogo tem linhas retas tao fortes quanto.
+  //
+  // Trocar o enquadramento sem necessidade estraga o corte, enquanto deixar de
+  // trocar so mantem o formato de sempre. Como errar custa caro e nao errar
+  // custa pouco, so mudamos quando os DOIS sinais concordam que a webcam sumiu.
+  const bordas = [];
+  for (const buf of frames) {
+    const f = medirBordaDaWebcam(buf, area);
+    if (f != null) bordas.push(f);
+  }
+  bordas.sort((a, b) => a - b);
+  const bordaMediana = bordas.length ? bordas[Math.floor(bordas.length / 2)] : null;
+
+  const estabilidadeDiz = razao >= 0.78;                        // regiao muda quase tanto quanto a tela
+  const molduraDiz = bordaMediana != null && bordaMediana < 1.2; // sem quebra de imagem na borda
+  const semWebcam = estabilidadeDiz && molduraDiz;
 
   return {
-    temWebcam: acimaDoLimiar >= Math.ceil(forcas.length / 2),
-    forca: Math.round(media * 100) / 100,
-    amostras: forcas.length,
-    misto: acimaDoLimiar > 0 && acimaDoLimiar < forcas.length,
+    temWebcam: !semWebcam,
+    razao: Math.round(razao * 100) / 100,
+    borda: bordaMediana == null ? null : Math.round(bordaMediana * 100) / 100,
+    amostras: frames.length,
+    // Faixa cinzenta: um sinal aponta pra tela cheia e o outro nao. Nao troca
+    // o enquadramento, mas avisa pra pessoa conferir aquele clipe.
+    misto: estabilidadeDiz !== molduraDiz,
   };
 }
 

@@ -34,26 +34,9 @@ iniciar.bat
 
 A janela do programa abre sozinha. **Deixe a janela preta aberta** enquanto usa.
 
-### Usar pelo celular, na mesma casa
-
-```
-iniciar-no-celular.bat
-```
-
-A janela preta mostra um endereço do tipo `http://192.168.0.7:4321`.
-Abra esse endereço no navegador do celular — o celular precisa estar no
-**mesmo wi-fi** que o PC, e o PC precisa ficar ligado.
-
----
-
-## Rodar num servidor (acessar de qualquer lugar)
-
-> **Vercel não funciona para este projeto.** Ele não é um site: é um processador
-> de vídeo. Precisa de ffmpeg, Python, disco para arquivos grandes e de processos
-> que rodam por **5 a 20 minutos** — nada disso cabe em função serverless, que
-> morre em segundos e não guarda arquivo. Detalhes em [DEPLOY.md](DEPLOY.md).
-
-O caminho que funciona é container. Veja [DEPLOY.md](DEPLOY.md).
+Ele lembra o que voce ajustou — onde fica a webcam, a cor da linha, o
+formato, a quantidade de cortes. Na proxima vez ja abre do jeito que voce
+deixou.
 
 ---
 
@@ -100,7 +83,7 @@ e ajuste os pesos em `src/score.js`.
 
 ## Opcional: deixar a IA escolher
 
-Em "Ajustes finos" há um campo para a chave da API da Anthropic. Com ela, a Claude
+Em **Ajustes** (o botao no topo da tela) há um campo para a chave da API da Anthropic. Com ela, a Claude
 lê a transcrição inteira e escolhe os trechos entendendo contexto, ironia e piada —
 coisa que a análise por regras não pega.
 
