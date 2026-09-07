@@ -9,7 +9,7 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const { URL } = require('url');
 
-const { processar, SAIDA, TRABALHO } = require('./pipeline');
+const { processar, refazerClipe, SAIDA, TRABALHO } = require('./pipeline');
 const media = require('./media');
 const baixador = require('./baixar');
 
@@ -258,6 +258,22 @@ function localizarPorNome(nome, tamanho) {
 
 // ---------------------------------------------------------------- trabalhos
 
+/**
+ * Resolve um caminho vindo do navegador e garante que ele fica DENTRO da pasta
+ * de saida. path.relative em vez de startsWith: no Linux o filesystem e
+ * case-sensitive (o toLowerCase de antes tanto deixava passar quanto barrava
+ * por engano), e sem checar o separador um irmao do tipo "saida-publico"
+ * passaria no startsWith ingenuo.
+ * @returns {string|null} o caminho absoluto, ou null se estiver fora
+ */
+function dentroDaSaida(caminho) {
+  if (!caminho) return null;
+  const resolvido = path.resolve(String(caminho));
+  const rel = path.relative(path.resolve(SAIDA), resolvido);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  return resolvido;
+}
+
 function novoTrabalho() {
   const id = Math.random().toString(36).slice(2, 10);
   trabalhos.set(id, { eventos: [], ouvintes: new Set(), terminou: false });
@@ -492,6 +508,38 @@ const servidor = http.createServer(async (req, res) => {
       return;
     }
 
+    // Refaz UM clipe com outro gancho e/ou outro comeco e fim. Nao transcreve
+    // nada de novo - reaproveita a transcricao guardada, entao leva segundos.
+    if (rota === '/api/refazer' && req.method === 'POST') {
+      if (jobAtivo) return json(res, 429, { erro: 'Espere o video que esta sendo processado terminar.' });
+
+      const corpo = await lerCorpo(req);
+      // A janela manda o caminho do proprio clipe; a pasta sai daqui. Deixar
+      // o navegador separar pasta de arquivo daria errado em algum sistema -
+      // path.dirname ja sabe fazer isso certo no Windows e no Linux.
+      const arquivo = dentroDaSaida(corpo.arquivo);
+      if (!arquivo || !fs.existsSync(arquivo)) {
+        return json(res, 400, { erro: 'Nao achei o arquivo desse clipe.' });
+      }
+      const pasta = path.dirname(arquivo);
+
+      const id = novoTrabalho();
+      json(res, 200, { id });
+
+      jobAtivo = true;
+      refazerClipe({
+        pasta: pasta,
+        numero: corpo.numero,
+        inicio: corpo.inicio,
+        duracao: corpo.duracao,
+        gancho: corpo.gancho,
+      }, (ev) => emitir(id, ev))
+        .then(() => emitir(id, { tipo: 'fim' }))
+        .catch((e) => emitir(id, { tipo: 'erro', msg: e.message || String(e) }))
+        .finally(() => { jobAtivo = false; });
+      return;
+    }
+
     if (rota === '/api/eventos') {
       const id = url.searchParams.get('id');
       const t = trabalhos.get(id);
@@ -529,16 +577,8 @@ const servidor = http.createServer(async (req, res) => {
     if (rota === '/arquivo') {
       const p = url.searchParams.get('p');
       if (!p) { res.writeHead(400); return res.end(); }
-      const resolvido = path.resolve(p);
-      const base = path.resolve(SAIDA);
-      // path.relative em vez de startsWith: no Linux o filesystem e
-      // case-sensitive (o toLowerCase de antes tanto deixava passar quanto
-      // barrava por engano), e sem checar o separador um irmao do tipo
-      // "saida-publico" passaria no startsWith ingenuo.
-      const rel = path.relative(base, resolvido);
-      if (rel.startsWith('..') || path.isAbsolute(rel)) {
-        res.writeHead(403); return res.end('fora da pasta de saida');
-      }
+      const resolvido = dentroDaSaida(p);
+      if (!resolvido) { res.writeHead(403); return res.end('fora da pasta de saida'); }
       return servirArquivo(req, res, resolvido);
     }
 

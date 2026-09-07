@@ -339,6 +339,45 @@
   }
   .alt:hover { border-color: var(--marca); color: var(--texto); }
 
+  /* ---------------------------------------------------------- ajuste do clipe */
+  .ajuste { border-top: 1px solid var(--linha); margin-top: 4px; padding-top: 11px; display: none; }
+  .ajuste.on { display: block; }
+  .ajuste label.rot { margin-bottom: 6px; }
+  .ajuste textarea {
+    min-height: 56px; font-size: var(--t5); font-weight: 600;
+    text-transform: uppercase; line-height: 1.35;
+  }
+  .nudge { display: flex; align-items: center; gap: 4px; margin-top: 7px; }
+  .nudge > b {
+    font-size: var(--t6); color: var(--texto2); font-weight: 600;
+    width: 48px; flex: none;
+  }
+  .nudge button {
+    padding: 5px 7px; border-radius: 7px; cursor: pointer;
+    background: var(--superficie2); color: var(--texto2);
+    border: 1px solid var(--linha2); font: inherit; font-size: var(--t6);
+    font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  .nudge button:hover:not(:disabled) { border-color: var(--marca); color: var(--texto); }
+  .nudge button:disabled { opacity: .3; cursor: not-allowed; }
+  .nudge .marca-tempo {
+    flex: 1; text-align: center; font-size: var(--t5); font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--texto);
+  }
+  .ajuste .conta {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: var(--t6); color: var(--texto2); margin-top: 10px;
+  }
+  .ajuste .conta b { color: var(--texto); font-variant-numeric: tabular-nums; }
+  .ajuste .conta .mudou { color: var(--amarelo); }
+  .refazendo {
+    display: none; align-items: center; gap: 8px;
+    font-size: var(--t6); color: var(--marca); margin-top: 10px;
+  }
+  .refazendo.on { display: flex; }
+  .refazendo .i { animation: girar 1s linear infinite; }
+  .selo.editado { background: rgba(56,189,248,.14); color: var(--azul); }
+
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #2a333f; border-radius: 9px; }
@@ -1362,28 +1401,69 @@
   }
 
   // ------------------------------------------------------------ cartao de clipe
+  const PASSOS = [[-2, '-2s'], [-0.5, '-½s'], [0.5, '+½s'], [2, '+2s']];
+
   function cartao(c) {
     const div = document.createElement('div');
     div.className = 'clipe';
-    const src = '/arquivo?p=' + encodeURIComponent(c.arquivo);
-    const capa = c.miniatura ? '/arquivo?p=' + encodeURIComponent(c.miniatura) : '';
+    div.dataset.numero = c.numero;
+
+    // O ajuste comeca sempre do que esta gravado no arquivo agora
+    const est = {
+      inicio: c.inicio,
+      duracao: c.duracao,
+      gancho: c.gancho || '',
+      base: { inicio: c.inicio, duracao: c.duracao, gancho: c.gancho || '' },
+    };
+
+    const src = '/arquivo?p=' + encodeURIComponent(c.arquivo) + '&v=' + Date.now();
+    const capa = c.miniatura ? '/arquivo?p=' + encodeURIComponent(c.miniatura) + '&v=' + Date.now() : '';
     const alts = (c.titulos || []).slice(1).map((x) =>
       '<button class="alt" data-copiar="' + esc(x.texto) + '">' + esc(x.texto) + '</button>').join('');
     const motivos = (c.motivos || []).slice(0, 4).map((m) => esc(m.fator)).join(' · ');
+    const nudge = (lado) => PASSOS.map((s) =>
+      '<button data-lado="' + lado + '" data-passo="' + s[0] + '">' + s[1] + '</button>').join('');
 
     div.innerHTML =
       '<video src="' + src + '" ' + (capa ? 'poster="' + capa + '"' : '') + ' controls preload="none"></video>' +
       '<div class="clipe-corpo">' +
-        '<span class="selo ' + c.rotulo.cor + '"><i data-lucide="' +
-          (c.rotulo.cor === 'otimo' ? 'trophy' : 'flame') + '" class="i"></i> ' + esc(c.rotulo.texto) + '</span>' +
+        '<div style="display:flex; gap:6px; flex-wrap:wrap">' +
+          '<span class="selo ' + c.rotulo.cor + '"><i data-lucide="' +
+            (c.rotulo.cor === 'otimo' ? 'trophy' : 'flame') + '" class="i"></i> ' + esc(c.rotulo.texto) + '</span>' +
+          (c.editado ? '<span class="selo editado"><i data-lucide="pencil" class="i"></i> Editado</span>' : '') +
+        '</div>' +
         '<div class="clipe-gancho">' + esc(c.titulo) + '</div>' +
-        '<div class="clipe-meta"><i data-lucide="clock" class="i"></i><span>' +
+        '<div class="clipe-meta"><i data-lucide="clock" class="i"></i><span class="tempos">' +
           c.inicioTexto + ' → ' + c.fimTexto + ' · ' + c.duracao + 's · ' + c.tamanhoMb + ' MB</span></div>' +
         (c.observacao ? '<div class="clipe-meta" style="color:#7dd3fc"><i data-lucide="info" class="i"></i><span>' + esc(c.observacao) + '</span></div>' : '') +
+
         '<div class="clipe-acoes">' +
           '<a class="btn p" href="' + src + '" download="' + esc(c.nomeArquivo) + '"><i data-lucide="download" class="i"></i> Baixar</a>' +
           '<button class="btn p" data-copiar="' + esc(c.titulo) + '"><i data-lucide="copy" class="i"></i> Copiar</button>' +
+          '<button class="btn p abrir-ajuste"><i data-lucide="sliders-horizontal" class="i"></i> Ajustar</button>' +
         '</div>' +
+
+        '<div class="ajuste">' +
+          '<label class="rot"><i data-lucide="type" class="i"></i> Texto que aparece na tela</label>' +
+          '<textarea class="campo-gancho" placeholder="Sem texto na tela" maxlength="90">' + esc(est.gancho) + '</textarea>' +
+          '<div style="font-size:var(--t6); color:var(--texto3); margin-top:5px">' +
+            'Aparece nos primeiros 4 segundos. Deixe vazio pra tirar.</div>' +
+
+          '<label class="rot" style="margin-top:14px"><i data-lucide="scissors" class="i"></i> Tamanho do corte</label>' +
+          '<div class="nudge"><b>Começo</b>' + nudge('inicio') + '<span class="marca-tempo t-inicio"></span></div>' +
+          '<div class="nudge"><b>Fim</b>' + nudge('fim') + '<span class="marca-tempo t-fim"></span></div>' +
+
+          '<div class="conta">' +
+            '<span>Duração: <b class="t-dur"></b></span>' +
+            '<span class="t-antes"></span>' +
+            '<button class="btn p t-reset" style="margin-left:auto"><i data-lucide="undo-2" class="i"></i> Do jeito que estava</button>' +
+          '</div>' +
+
+          '<button class="btn principal t-refazer" style="width:100%; margin-top:12px" disabled>' +
+            '<i data-lucide="wand-sparkles" class="i"></i> Refazer este clipe</button>' +
+          '<div class="refazendo"><i data-lucide="loader-circle" class="i"></i><span class="t-status"></span></div>' +
+        '</div>' +
+
         '<details class="detalhes"><summary><i data-lucide="chevron-down" class="i"></i> Ver detalhes</summary>' +
           '<div class="clipe-det">' +
             '<div class="bloco"><b>Nota ' + c.nota + '/99</b> — ' + motivos + '</div>' +
@@ -1400,8 +1480,119 @@
         setTimeout(() => { this.innerHTML = antes; icones(this); }, 1300);
       });
     });
+
+    ligarAjuste(div, c, est);
     icones(div);
     return div;
+  }
+
+  // ------------------------------------------------------------ ajustar clipe
+  function ligarAjuste(div, c, est) {
+    const cx = div.querySelector('.ajuste');
+    const campo = div.querySelector('.campo-gancho');
+    const botao = div.querySelector('.t-refazer');
+    const status = div.querySelector('.refazendo');
+
+    div.querySelector('.abrir-ajuste').addEventListener('click', function () {
+      const abrindo = !cx.classList.contains('on');
+      cx.classList.toggle('on', abrindo);
+      this.setAttribute('aria-pressed', String(abrindo));
+      if (abrindo) campo.focus();
+    });
+
+    function mudou() {
+      return est.inicio !== est.base.inicio ||
+             est.duracao !== est.base.duracao ||
+             campo.value.trim() !== est.base.gancho;
+    }
+
+    function pintar() {
+      div.querySelector('.t-inicio').textContent = mmss(est.inicio);
+      div.querySelector('.t-fim').textContent = mmss(est.inicio + est.duracao);
+      div.querySelector('.t-dur').textContent = Math.round(est.duracao) + 's';
+
+      const antes = div.querySelector('.t-antes');
+      const mudouTempo = est.inicio !== est.base.inicio || est.duracao !== est.base.duracao;
+      antes.className = 't-antes' + (mudouTempo ? ' mudou' : '');
+      antes.textContent = mudouTempo ? '(era ' + Math.round(est.base.duracao) + 's)' : '';
+
+      botao.disabled = !mudou();
+      div.querySelector('.t-reset').disabled = !mudou();
+
+      // nao deixa passar do comeco do video nem ficar curto demais
+      div.querySelectorAll('.nudge button').forEach((b) => {
+        const passo = Number(b.dataset.passo);
+        if (b.dataset.lado === 'inicio') {
+          b.disabled = (est.inicio + passo < 0) || (est.duracao - passo < 3);
+        } else {
+          b.disabled = est.duracao + passo < 3;
+        }
+      });
+    }
+
+    div.querySelectorAll('.nudge button').forEach((b) => {
+      b.addEventListener('click', () => {
+        const passo = Number(b.dataset.passo);
+        if (b.dataset.lado === 'inicio') {
+          // mexer no comeco move o inicio e mantem o fim onde estava
+          const novo = Math.max(0, Math.round((est.inicio + passo) * 100) / 100);
+          est.duracao = Math.round((est.duracao + (est.inicio - novo)) * 10) / 10;
+          est.inicio = novo;
+        } else {
+          est.duracao = Math.round((est.duracao + passo) * 10) / 10;
+        }
+        pintar();
+      });
+    });
+
+    campo.addEventListener('input', pintar);
+
+    div.querySelector('.t-reset').addEventListener('click', () => {
+      est.inicio = est.base.inicio;
+      est.duracao = est.base.duracao;
+      campo.value = est.base.gancho;
+      pintar();
+    });
+
+    botao.addEventListener('click', async () => {
+      botao.disabled = true;
+      status.classList.add('on');
+      div.querySelector('.t-status').textContent = 'Preparando...';
+
+      let r;
+      try {
+        r = await fetch('/api/refazer', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            arquivo: c.arquivo, numero: c.numero,
+            inicio: est.inicio, duracao: est.duracao,
+            gancho: campo.value.trim(),
+          }),
+        }).then((x) => x.json());
+      } catch (_) {
+        status.classList.remove('on'); botao.disabled = false;
+        return erro('Nao consegui falar com o programa. Ele ainda esta aberto?');
+      }
+      if (r.erro) {
+        status.classList.remove('on'); botao.disabled = false;
+        return erro(r.erro);
+      }
+
+      ouvir(r.id, {
+        progresso: (d) => { div.querySelector('.t-status').textContent = d.msg; },
+        aviso: (d) => registrar(d.msg),
+        'clipe-refeito': (d) => {
+          // troca o cartao inteiro: o video, os tempos e o selo de editado
+          const novo = cartao(d.clipe);
+          novo.querySelector('.ajuste').classList.add('on');
+          div.replaceWith(novo);
+          novo.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        },
+        erro: (m) => { status.classList.remove('on'); botao.disabled = false; erro(m); },
+      });
+    });
+
+    pintar();
   }
 
   $('btnPasta').addEventListener('click', () => {

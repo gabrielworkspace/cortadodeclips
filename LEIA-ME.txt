@@ -38,7 +38,11 @@ COMO USAR (o dia a dia)
       - em "Ver detalhes": o porquê de ter pontuado, outros
         títulos sugeridos e a fala do trecho
 
-7. Os arquivos ficam na pasta   saida\
+7. Nao gostou de algum? Clique em "Ajustar" no cartao do clipe.
+   Da pra reescrever o texto que aparece na tela e esticar ou
+   encurtar o corte. Veja mais abaixo.
+
+8. Os arquivos ficam na pasta   saida\
 
 
 QUANTO TEMPO DEMORA
@@ -152,6 +156,40 @@ LEGENDA E GANCHO (no botão "Ajustes", no topo)
   Legenda         - grava a legenda no vídeo, estilo Shorts: a palavra
                     que está sendo falada fica amarela. Também gera um
                     arquivo .srt separado, pra legendar no editor.
+
+
+AJUSTAR UM CLIPE DEPOIS DE PRONTO
+---------------------------------
+
+Nem sempre o texto que o programa escolheu e o melhor, e nem sempre
+o corte parou no ponto certo. Em vez de rodar tudo de novo, cada
+cartao de clipe tem um botao "Ajustar".
+
+  TEXTO QUE APARECE NA TELA
+      E o gancho: o texto grande dos primeiros 4 segundos. Apague e
+      escreva o que voce quiser. Se deixar vazio, o clipe sai sem
+      texto nenhum na tela.
+
+  TAMANHO DO CORTE
+      Duas linhas de botoes, uma pro comeco e outra pro fim:
+          -2s   -meio segundo   +meio segundo   +2s
+
+      Mexer no COMECO move onde o clipe abre e deixa o fim parado.
+      Mexer no FIM estica ou encurta so o final.
+      A duracao nova aparece embaixo, junto da antiga.
+
+      "Do jeito que estava" desfaz tudo e volta pro original.
+
+  Clique em "Refazer este clipe" e pronto. Leva de 20 a 40 segundos,
+  nao os minutos da primeira vez: ele NAO transcreve nada de novo,
+  so recorta de novo usando o que ja tinha ouvido.
+
+  O clipe novo substitui o antigo, com o mesmo nome de arquivo, e
+  ganha a etiqueta "Editado". A legenda .srt e o RELATORIO.txt sao
+  regravados junto. Pode ajustar quantas vezes quiser.
+
+  Obs: isso so funciona nos clipes gerados desta versao em diante.
+  Em pasta de rodada antiga ele avisa que precisa gerar de novo.
 
 
 A NOTA DE ENGAJAMENTO

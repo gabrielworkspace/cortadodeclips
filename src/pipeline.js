@@ -10,7 +10,7 @@ const path = require('path');
 const media = require('./media');
 const legenda = require('./legenda');
 const momentos = require('./momentos');
-const { encontrarCortes, mmss } = require('./score');
+const { encontrarCortes, achatarPalavras, mmss } = require('./score');
 const { gerarCopy, gerarGanchoDeTela } = require('./copy');
 const { interpretar } = require('./intencao');
 
@@ -263,98 +263,45 @@ async function processar(opcoes, avisar) {
 
   for (let i = 0; i < cortes.length; i++) {
     const c = cortes[i];
+    // O gancho fica guardado no clipe: e o texto que a pessoa vai querer
+    // reescrever depois, quando bater o olho no resultado e pensar em algo melhor.
+    c.gancho = opcoes.textoGancho !== false ? gerarGanchoDeTela(c) : null;
+
     // A nota entra no nome: assim o ranking aparece na pasta do Windows tambem
     const base = 'clipe-' + String(i + 1).padStart(2, '0') +
                  '-nota' + c.nota + '-' + limparNome(c.titulo);
-    const mp4 = path.join(pastaSaida, base + '.mp4');
 
     const p0 = 68 + (i / cortes.length) * 30;
     const p1 = 68 + ((i + 1) / cortes.length) * 30;
-    emitir(p0, 'cortando', 'Gerando o clipe ' + (i + 1) + ' de ' + cortes.length + '...');
+    const rotuloEtapa = 'clipe ' + (i + 1) + ' de ' + cortes.length;
+    emitir(p0, 'cortando', 'Gerando o ' + rotuloEtapa + '...');
 
-    // O layout do video muda ao longo da gravacao: as vezes e webcam + gameplay,
-    // as vezes o streamer poe a cara em tela cheia. Aplicar o split nesse segundo
-    // caso recorta o rosto em dois pedacos empilhados. Entao a gente confere
-    // trecho a trecho se a janelinha da webcam esta mesmo ali.
-    let formatoDoClipe = opcoes.formato || 'vertical';
-    let observacao = null;
+    const pronto = await renderizarClipe({
+      video: video,
+      assinatura: assinatura,
+      pastaSaida: pastaSaida,
+      base: base,
+      opcoes: opcoes,
+      vertical: vertical,
+      avisar: avisar,
+      aoProgredir: (frac, msg) => emitir(p0 + (p1 - p0) * frac, 'cortando', msg),
+      rotulo: rotuloEtapa,
+    }, c);
 
-    // Quando ele poe a cara em tela cheia, nao existe webcam separada pra
-    // recortar: o rosto JA e o video inteiro. Manter o split ali empilha dois
-    // pedacos do proprio rosto e ainda desenha uma linha no meio dele. Nesses
-    // trechos o certo e o oposto - foco so na cara, sem divisao nenhuma.
-    if (formatoDoClipe === 'split' && opcoes.detectarWebcam !== false &&
-        opcoes.recorte && opcoes.recorte.topo) {
-      emitir(p0, 'cortando', 'Conferindo o enquadramento do clipe ' + (i + 1) + '...');
-      const d = await media.detectarWebcam(video, c.inicio, c.duracao, opcoes.recorte.topo);
-
-      if (!d.temWebcam) {
-        formatoDoClipe = opcoes.formatoSemWebcam || 'vertical';
-        observacao = 'Aqui aparece só a cara dele — foquei no rosto, sem a divisão.';
-        avisar({ tipo: 'aviso', msg: 'Clipe ' + (i + 1) + ': só a cara nesse trecho, foquei no rosto sem divisão.' });
-      } else if (d.misto) {
-        observacao = 'O layout muda no meio desse trecho — confira o resultado.';
-      }
-    }
-
-    // .ass fica na pasta trabalho e o ffmpeg roda com cwd la:
-    // caminho curto e sem espaco evita problema de escape no filtro
-    //
-    // Legenda palavra-a-palavra e gancho na tela sao dois recursos separados
-    // pra quem usa o programa - desligar um nao pode apagar o outro. Antes os
-    // dois estavam amarrados na mesma flag "legendar" e desligar a legenda
-    // also apagava o gancho, mesmo com a caixa dele marcada.
-    const querLegenda = !!opcoes.legendar;
-    const querGancho = opcoes.textoGancho !== false;
-
-    let arquivoAss = null;
-    if ((querLegenda || querGancho) && vertical) {
-      arquivoAss = 'leg-' + assinatura + '-' + (i + 1) + '.ass';
-      legenda.gerarAss(c.palavras, c.inicio, path.join(TRABALHO, arquivoAss), {
-        tamanho: opcoes.tamanhoLegenda || 78,
-        margemBaixo: margemDaLegenda(opcoes, formatoDoClipe),
-        incluirPalavras: querLegenda,
-        // O gancho da TELA e diferente do titulo do post: ele precisa criar
-        // lacuna em 2 linhas, nao resumir o trecho.
-        gancho: querGancho ? gerarGanchoDeTela(c) : null,
-        duracaoGancho: opcoes.duracaoGancho || 4,
-        margemGancho: formatoDoClipe === 'split' ? 660 : 180,
-      });
-    }
-
-    await media.cortarClipe({
-      video,
-      inicio: c.inicio,
-      duracao: c.duracao,
-      destino: mp4,
-      formato: formatoDoClipe,
-      recorte: opcoes.recorte,
-      qualidade: opcoes.qualidade || 'maxima',
-      arquivoAss,
-      pastaTrabalho: TRABALHO,
-      aoProgredir: (frac) => emitir(p0 + (p1 - p0) * frac, 'cortando',
-        'Gerando o clipe ' + (i + 1) + ' de ' + cortes.length + '... ' + Math.round(frac * 100) + '%'),
-    });
-
-    // legenda solta, pra editar depois
-    legenda.gerarSrt(c.palavras, c.inicio, path.join(pastaSaida, base + '.srt'));
-
-    const miniatura = path.join(pastaSaida, base + '.jpg');
-    await media.gerarMiniatura(video, c.inicio + c.duracao / 2, miniatura, vertical);
-
-    if (arquivoAss) { try { fs.unlinkSync(path.join(TRABALHO, arquivoAss)); } catch (_) {} }
-
-    const pronto = Object.assign(semPalavras(c), {
-      arquivo: mp4,
-      nomeArquivo: path.basename(mp4),
-      formatoUsado: formatoDoClipe,
-      observacao,
-      miniatura: fs.existsSync(miniatura) ? miniatura : null,
-      tamanhoMb: Math.round((fs.statSync(mp4).size / 1048576) * 10) / 10,
-    });
     prontos.push(pronto);
     avisar({ tipo: 'clipe-pronto', clipe: pronto });
   }
+
+  // Guarda o que um "refazer" precisa saber. Sem isso, mudar o gancho ou
+  // esticar dois segundos de um clipe obrigaria a transcrever o video de novo.
+  gravarSessao(pastaSaida, {
+    video: video,
+    assinatura: assinatura,
+    transcricao: jsonTranscricao,
+    duracaoVideo: info.duracao,
+    opcoes: opcoes,
+    clipes: prontos,
+  });
 
   // ---- 7. relatorio
   const relatorio = {
@@ -448,4 +395,218 @@ function quebrar(texto, largura) {
   return linhas.join('\n');
 }
 
-module.exports = { processar, SAIDA, TRABALHO };
+
+// ---------------------------------------------------------------- um clipe
+
+/**
+ * Gera UM clipe: confere o enquadramento, monta a legenda, corta e faz a
+ * miniatura. Vive separado do laco principal porque o "refazer" usa exatamente
+ * o mesmo caminho - so muda o corte que entra.
+ *
+ * @param {object} ctx  { video, assinatura, pastaSaida, base, opcoes, vertical,
+ *                        avisar, aoProgredir, rotulo }
+ * @param {object} c    o corte: { inicio, duracao, palavras, gancho, ... }
+ */
+async function renderizarClipe(ctx, c) {
+  const opcoes = ctx.opcoes || {};
+  const avisar = ctx.avisar || (() => {});
+  const aoProgredir = ctx.aoProgredir || (() => {});
+  const rotulo = ctx.rotulo || 'clipe';
+  const mp4 = path.join(ctx.pastaSaida, ctx.base + '.mp4');
+
+  // O layout do video muda ao longo da gravacao: as vezes e webcam + gameplay,
+  // as vezes o streamer poe a cara em tela cheia. Aplicar o split nesse segundo
+  // caso recorta o rosto em dois pedacos empilhados. Entao a gente confere
+  // trecho a trecho se a janelinha da webcam esta mesmo ali.
+  let formatoDoClipe = opcoes.formato || 'vertical';
+  let observacao = null;
+
+  // Quando ele poe a cara em tela cheia, nao existe webcam separada pra
+  // recortar: o rosto JA e o video inteiro. Manter o split ali empilha dois
+  // pedacos do proprio rosto e ainda desenha uma linha no meio dele. Nesses
+  // trechos o certo e o oposto - foco so na cara, sem divisao nenhuma.
+  if (formatoDoClipe === 'split' && opcoes.detectarWebcam !== false &&
+      opcoes.recorte && opcoes.recorte.topo) {
+    aoProgredir(0, 'Conferindo o enquadramento do ' + rotulo + '...');
+    const d = await media.detectarWebcam(ctx.video, c.inicio, c.duracao, opcoes.recorte.topo);
+
+    if (!d.temWebcam) {
+      formatoDoClipe = opcoes.formatoSemWebcam || 'vertical';
+      observacao = 'Aqui aparece so a cara dele - foquei no rosto, sem a divisao.';
+      avisar({ tipo: 'aviso', msg: 'No ' + rotulo + ' so aparece a cara dele: foquei no rosto, sem divisao.' });
+    } else if (d.misto) {
+      observacao = 'O layout muda no meio desse trecho - confira o resultado.';
+    }
+  }
+
+  // .ass fica na pasta trabalho e o ffmpeg roda com cwd la:
+  // caminho curto e sem espaco evita problema de escape no filtro
+  //
+  // Legenda palavra-a-palavra e gancho na tela sao dois recursos separados
+  // pra quem usa o programa - desligar um nao pode apagar o outro.
+  const querLegenda = !!opcoes.legendar;
+  const gancho = c.gancho || null;
+
+  let arquivoAss = null;
+  if ((querLegenda || gancho) && ctx.vertical) {
+    arquivoAss = 'leg-' + ctx.assinatura + '-' + limparNome(ctx.base) + '.ass';
+    legenda.gerarAss(c.palavras || [], c.inicio, path.join(TRABALHO, arquivoAss), {
+      tamanho: opcoes.tamanhoLegenda || 78,
+      margemBaixo: margemDaLegenda(opcoes, formatoDoClipe),
+      incluirPalavras: querLegenda,
+      // O gancho da TELA e diferente do titulo do post: ele precisa criar
+      // lacuna em 2 linhas, nao resumir o trecho.
+      gancho: gancho,
+      duracaoGancho: opcoes.duracaoGancho || 4,
+      margemGancho: formatoDoClipe === 'split' ? 660 : 180,
+    });
+  }
+
+  await media.cortarClipe({
+    video: ctx.video,
+    inicio: c.inicio,
+    duracao: c.duracao,
+    destino: mp4,
+    formato: formatoDoClipe,
+    recorte: opcoes.recorte,
+    qualidade: opcoes.qualidade || 'maxima',
+    arquivoAss,
+    pastaTrabalho: TRABALHO,
+    aoProgredir: (frac) => aoProgredir(frac,
+      'Gerando o ' + rotulo + '... ' + Math.round(frac * 100) + '%'),
+  });
+
+  // legenda solta, pra editar depois
+  legenda.gerarSrt(c.palavras || [], c.inicio, path.join(ctx.pastaSaida, ctx.base + '.srt'));
+
+  const miniatura = path.join(ctx.pastaSaida, ctx.base + '.jpg');
+  await media.gerarMiniatura(ctx.video, c.inicio + c.duracao / 2, miniatura, ctx.vertical);
+
+  if (arquivoAss) { try { fs.unlinkSync(path.join(TRABALHO, arquivoAss)); } catch (_) {} }
+
+  return Object.assign(semPalavras(c), {
+    arquivo: mp4,
+    nomeArquivo: path.basename(mp4),
+    base: ctx.base,
+    formatoUsado: formatoDoClipe,
+    observacao,
+    miniatura: fs.existsSync(miniatura) ? miniatura : null,
+    tamanhoMb: Math.round((fs.statSync(mp4).size / 1048576) * 10) / 10,
+  });
+}
+
+// ---------------------------------------------------------------- refazer
+
+const ARQUIVO_SESSAO = 'sessao.json';
+
+function gravarSessao(pasta, dados) {
+  try {
+    fs.writeFileSync(path.join(pasta, ARQUIVO_SESSAO), JSON.stringify(dados, null, 2), 'utf8');
+  } catch (_) {}
+}
+
+function lerSessao(pasta) {
+  const arquivo = path.join(pasta, ARQUIVO_SESSAO);
+  if (!fs.existsSync(arquivo)) {
+    throw new Error('Essa pasta e de uma versao antiga do programa e nao guarda o que preciso pra refazer. Gere os cortes de novo.');
+  }
+  return JSON.parse(fs.readFileSync(arquivo, 'utf8'));
+}
+
+/**
+ * Refaz um clipe que ja existe com outro gancho e/ou outro comeco e fim.
+ * Nao transcreve nada de novo: pega as palavras da transcricao guardada e
+ * recorta o pedaco novo. Por isso leva segundos, nao minutos.
+ *
+ * @param {object} pedido  { pasta, numero, inicio, duracao, gancho }
+ */
+async function refazerClipe(pedido, avisar) {
+  avisar = avisar || (() => {});
+  const emitir = (pct, msg) => avisar({ tipo: 'progresso', pct: Math.round(pct), etapa: 'cortando', msg });
+
+  const sessao = lerSessao(pedido.pasta);
+  const antigo = (sessao.clipes || []).find((c) => c.numero === Number(pedido.numero));
+  if (!antigo) throw new Error('Nao achei o clipe ' + pedido.numero + ' nessa pasta.');
+  if (!fs.existsSync(sessao.video)) {
+    throw new Error('O video original saiu do lugar: ' + sessao.video);
+  }
+
+  emitir(4, 'Preparando o clipe ' + antigo.numero + '...');
+  await media.garantirFfmpeg();
+
+  // Onde o clipe comeca e termina agora. O minimo e 3s porque abaixo disso
+  // nao cabe nem o gancho; o maximo e o que sobra ate o fim do video.
+  const limite = sessao.duracaoVideo || Infinity;
+  let inicio = pedido.inicio == null ? antigo.inicio : Number(pedido.inicio);
+  let duracao = pedido.duracao == null ? antigo.duracao : Number(pedido.duracao);
+  if (!isFinite(inicio)) inicio = antigo.inicio;
+  if (!isFinite(duracao)) duracao = antigo.duracao;
+  inicio = Math.max(0, Math.min(inicio, Math.max(0, limite - 3)));
+  duracao = Math.max(3, Math.min(duracao, limite - inicio));
+  inicio = Math.round(inicio * 100) / 100;
+  duracao = Math.round(duracao * 10) / 10;
+
+  // As palavras do trecho novo saem da transcricao que ja esta no disco.
+  let palavras = [];
+  let texto = antigo.texto;
+  if (sessao.transcricao && fs.existsSync(sessao.transcricao)) {
+    const t = JSON.parse(fs.readFileSync(sessao.transcricao, 'utf8'));
+    const todas = achatarPalavras(t);
+    palavras = todas.filter((p) => p.fim > inicio && p.inicio < inicio + duracao);
+    texto = palavras.map((p) => p.texto).join(' ').replace(/\s+/g, ' ').trim() || antigo.texto;
+  } else {
+    avisar({ tipo: 'aviso', msg: 'A transcricao saiu do cache: refiz o video, mas sem legenda nova.' });
+  }
+
+  // undefined = nao mexeu no gancho; string vazia = quer sem gancho nenhum
+  const gancho = pedido.gancho === undefined
+    ? (antigo.gancho || null)
+    : (String(pedido.gancho).trim() || null);
+
+  const corte = Object.assign({}, antigo, {
+    inicio: inicio,
+    duracao: duracao,
+    fim: Math.round((inicio + duracao) * 100) / 100,
+    inicioTexto: mmss(inicio),
+    fimTexto: mmss(inicio + duracao),
+    palavras: palavras,
+    texto: texto,
+    gancho: gancho,
+    editado: true,
+  });
+
+  const pronto = await renderizarClipe({
+    video: sessao.video,
+    assinatura: sessao.assinatura,
+    pastaSaida: pedido.pasta,
+    base: antigo.base || path.basename(antigo.nomeArquivo, '.mp4'),
+    opcoes: sessao.opcoes || {},
+    vertical: (sessao.opcoes || {}).formato !== 'original',
+    avisar: avisar,
+    aoProgredir: (frac, msg) => emitir(8 + frac * 88, msg),
+    rotulo: 'clipe ' + antigo.numero,
+  }, corte);
+
+  // Guarda o clipe novo no lugar do antigo, pra um proximo ajuste partir daqui
+  sessao.clipes = (sessao.clipes || []).map((c) => (c.numero === pronto.numero ? pronto : c));
+  gravarSessao(pedido.pasta, sessao);
+  regravarRelatorio(pedido.pasta, sessao);
+
+  emitir(100, 'Clipe ' + pronto.numero + ' refeito.');
+  avisar({ tipo: 'clipe-refeito', clipe: pronto });
+  return pronto;
+}
+
+/** Mantem o RELATORIO.txt e o relatorio.json de acordo com o que foi refeito. */
+function regravarRelatorio(pasta, sessao) {
+  const arquivo = path.join(pasta, 'relatorio.json');
+  if (!fs.existsSync(arquivo)) return;
+  try {
+    const r = JSON.parse(fs.readFileSync(arquivo, 'utf8'));
+    r.clipes = sessao.clipes;
+    fs.writeFileSync(arquivo, JSON.stringify(r, null, 2), 'utf8');
+    fs.writeFileSync(path.join(pasta, 'RELATORIO.txt'), textoDoRelatorio(r), 'utf8');
+  } catch (_) {}
+}
+
+module.exports = { processar, refazerClipe, SAIDA, TRABALHO };

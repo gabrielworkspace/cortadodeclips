@@ -11,6 +11,11 @@ Você joga um vídeo (ou cola um link do YouTube/Kick), e ele:
 5. corta, enquadra em 9:16, grava a legenda e o gancho na tela
 6. entrega os clipes ordenados do melhor para o pior, com títulos sugeridos
 
+Depois de pronto, cada clipe tem um botão **Ajustar**: dá para reescrever o
+gancho que aparece na tela e esticar ou encurtar o corte, com o resultado
+saindo em segundos — ele reaproveita a transcrição em vez de ouvir tudo
+de novo.
+
 Tudo roda na sua máquina. Sem mensalidade, sem enviar seus vídeos para lugar nenhum.
 
 ---
