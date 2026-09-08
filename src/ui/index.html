@@ -9,129 +9,120 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --fundo: #08090d;
-    --painel: #10131b;
-    --painel2: #171b26;
-    --painel3: #1e2331;
-    --linha: #232838;
-    --linha2: #2f3648;
+    --fundo: #0a0d13;
+    --superficie: #131822;
+    --superficie2: #1a2029;
+    --linha: #242c38;
+    --linha2: #313b4a;
 
-    --texto: #f0f3f8;
-    --texto2: #a3adbf;
-    --texto3: #6f7889;
+    --texto: #eef2f7;
+    --texto2: #a6b0bf;
+    --texto3: #78828f;
 
-    --marca: #ff3d71;
-    --marca2: #ff9f45;
-    --azul: #45c6ff;
-    --verde: #45e08a;
-    --amarelo: #ffc93c;
+    --marca: #ff4d6d;
+    --marca2: #ff8a5c;
+    --azul: #38bdf8;
+    --verde: #4ade80;
+    --amarelo: #fbbf24;
 
-    --t1: 26px; --t2: 18px; --t3: 15px; --t4: 13.5px; --t5: 12.5px; --t6: 11.5px;
-    --r: 12px; --rg: 18px;
-    --rail: 74px;
+    /* escala tipografica: 6 tamanhos, nao 8 aleatorios */
+    --t1: 22px; --t2: 17px; --t3: 15px; --t4: 13.5px; --t5: 12.5px; --t6: 11.5px;
+
+    --raio: 12px;
+    --raio-g: 16px;
   }
 
-  html, body { height: 100%; }
   body {
-    background:
-      radial-gradient(1200px 620px at 82% -12%, rgba(255,61,113,.10), transparent 60%),
-      radial-gradient(900px 520px at 8% 108%, rgba(69,198,255,.07), transparent 60%),
-      var(--fundo);
+    background: var(--fundo);
     color: var(--texto);
     font: var(--t3)/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
-    overflow: hidden;
+    min-height: 100vh;
+    padding-bottom: 96px;   /* espaco pra barra de acao fixa */
   }
 
   .i { width: 1em; height: 1em; stroke-width: 2; flex: none; vertical-align: -0.125em; }
 
-  /* ============================================================ casca */
-  .app { display: grid; grid-template-columns: var(--rail) 1fr; height: 100vh; }
+  /* ---------------------------------------------------------- topo */
+  .topo {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 18px;
+    background: rgba(10,13,19,.93);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--linha);
+  }
+  .marca-logo {
+    width: 30px; height: 30px; border-radius: 9px; flex: none;
+    background: linear-gradient(135deg, var(--marca), var(--marca2));
+    display: grid; place-items: center; color: #fff; font-size: 15px;
+  }
+  .topo h1 { font-size: var(--t3); font-weight: 650; letter-spacing: -.2px; flex: 1; }
 
-  .rail {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    padding: 12px 0; border-right: 1px solid var(--linha);
-    background: rgba(16,19,27,.7); backdrop-filter: blur(12px);
-  }
-  .logo {
-    width: 40px; height: 40px; border-radius: 13px; margin-bottom: 12px;
-    background: linear-gradient(140deg, var(--marca), var(--marca2));
-    display: grid; place-items: center; color: #fff; font-size: 19px; flex: none;
-    box-shadow: 0 6px 20px rgba(255,61,113,.32);
-  }
-  .rail button {
-    width: 52px; padding: 9px 0 7px; border-radius: 12px; border: 1px solid transparent;
-    background: none; color: var(--texto3); cursor: pointer; transition: .15s;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    font: inherit; font-size: 9.5px; font-weight: 700; letter-spacing: .3px;
-    text-transform: uppercase;
-  }
-  .rail button .i { width: 19px; height: 19px; }
-  .rail button:hover:not(:disabled) { color: var(--texto2); background: var(--painel2); }
-  .rail button.on { color: var(--marca); background: rgba(255,61,113,.10); border-color: rgba(255,61,113,.28); }
-  .rail button:disabled { opacity: .28; cursor: not-allowed; }
-  .rail .espaco { flex: 1; }
+  .pagina { max-width: 940px; margin: 0 auto; padding: 20px 18px 0; }
 
-  .palco { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
-
-  /* ============================================================ cabeca */
-  .cabeca {
-    display: flex; align-items: center; gap: 14px;
-    padding: 13px 20px; border-bottom: 1px solid var(--linha); flex: none;
+  /* ---------------------------------------------------------- trilha */
+  .trilha { display: flex; gap: 6px; margin-bottom: 18px; }
+  .trilha button {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    padding: 11px 13px; border-radius: var(--raio);
+    background: var(--superficie); border: 1px solid var(--linha);
+    color: var(--texto3); font: inherit; font-size: var(--t5); font-weight: 600;
+    cursor: pointer; transition: .15s; text-align: left; min-width: 0;
   }
-  .cabeca .tit { min-width: 0; flex: 1; }
-  .cabeca h1 { font-size: var(--t2); font-weight: 680; letter-spacing: -.3px; }
-  .cabeca .sub {
-    font-size: var(--t6); color: var(--texto2); margin-top: 2px;
+  .trilha button:disabled { cursor: not-allowed; opacity: .5; }
+  .trilha button:not(:disabled):hover { border-color: var(--linha2); color: var(--texto2); }
+  .trilha button.atual { background: #1e1520; border-color: var(--marca); color: var(--texto); }
+  .trilha button.feito { color: var(--verde); border-color: #27452f; }
+  .trilha .num {
+    width: 20px; height: 20px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; font-size: var(--t6); font-weight: 700;
+    background: var(--superficie2); border: 1px solid var(--linha2);
+  }
+  .trilha button.atual .num { background: var(--marca); border-color: var(--marca); color: #fff; }
+  .trilha button.feito .num { background: #16351f; border-color: #2f6b3f; color: var(--verde); }
+  .trilha .rot { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ---------------------------------------------------------- cartao do video */
+  .video-fixo {
+    display: none; align-items: center; gap: 12px;
+    background: var(--superficie); border: 1px solid var(--linha);
+    border-radius: var(--raio); padding: 10px 12px; margin-bottom: 18px;
+  }
+  .video-fixo.on { display: flex; }
+  .video-fixo img {
+    width: 64px; height: 40px; border-radius: 7px; object-fit: cover;
+    background: #000; flex: none;
+  }
+  .video-fixo .nome {
+    font-size: var(--t4); font-weight: 600;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
+  .video-fixo .meta { font-size: var(--t6); color: var(--texto2); margin-top: 1px; }
 
-  .rolagem { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 18px 20px 26px; }
+  /* ---------------------------------------------------------- telas */
+  .tela { display: none; }
+  .tela.on { display: block; }
+  .tela > h2 { font-size: var(--t1); font-weight: 680; letter-spacing: -.4px; margin-bottom: 4px; }
+  .tela > .sub { color: var(--texto2); font-size: var(--t4); margin-bottom: 20px; }
 
-  /* ============================================================ bento */
-  .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; align-content: start; }
-
-  .cx {
-    background: var(--painel); border: 1px solid var(--linha); border-radius: var(--rg);
-    padding: 16px; min-width: 0; position: relative;
+  .cartao {
+    background: var(--superficie); border: 1px solid var(--linha);
+    border-radius: var(--raio-g); padding: 18px;
   }
-  .cx.acesa { border-color: rgba(255,61,113,.42); box-shadow: 0 0 0 1px rgba(255,61,113,.10); }
-  .cx > h3 {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 13px;
-    font-size: var(--t6); font-weight: 750; color: var(--texto2);
-    text-transform: uppercase; letter-spacing: 1px;
-  }
-  .cx > h3 .i { color: var(--marca); width: 14px; height: 14px; }
-  .cx > h3 .fim { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--texto3); }
+  .cartao + .cartao { margin-top: 12px; }
 
-  .c-fonte    { grid-column: span 7; }
-  .c-formato  { grid-column: span 5; }
-  .c-quadro   { grid-column: span 8; }
-  .c-previa   { grid-column: span 4; }
-  .c-momentos { grid-column: span 7; }
-  .c-saida    { grid-column: span 5; }
-
-  /* Sem video ainda: a caixa do video vira o centro da tela e o resto se
-     espalha numa fileira so, em vez de deixar meia tela vazia embaixo. */
-  .bento.vazio .c-fonte { grid-column: span 12; }
-  .bento.vazio .c-formato, .bento.vazio .c-momentos, .bento.vazio .c-saida { grid-column: span 4; }
-  .bento.vazio .solta { padding: 34px 18px; }
-  .bento.vazio .solta .i { width: 28px; height: 28px; }
-
-  @media (max-width: 1180px) {
-    .c-fonte, .c-formato, .c-quadro, .c-previa, .c-momentos, .c-saida,
-    .bento.vazio .c-formato, .bento.vazio .c-momentos, .bento.vazio .c-saida { grid-column: span 12; }
-  }
-
-  /* ============================================================ controles */
-  input[type=text], input[type=password], select, textarea {
-    width: 100%; padding: 11px 13px; border-radius: var(--r);
-    background: var(--painel2); color: var(--texto);
+  /* ---------------------------------------------------------- controles */
+  input[type=text], input[type=password], input[type=number], select, textarea {
+    width: 100%; padding: 11px 13px; border-radius: var(--raio);
+    background: var(--superficie2); color: var(--texto);
     border: 1px solid var(--linha2); font: inherit; font-size: var(--t4);
   }
   input:focus-visible, select:focus-visible, textarea:focus-visible,
-  button:focus-visible, a:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--azul); outline-offset: 2px;
+  }
   ::placeholder { color: var(--texto3); }
-  textarea { resize: vertical; min-height: 62px; line-height: 1.5; }
+  textarea { resize: vertical; min-height: 66px; line-height: 1.5; }
   label.rot {
     display: flex; align-items: center; gap: 7px;
     font-size: var(--t5); color: var(--texto2); margin-bottom: 8px; font-weight: 600;
@@ -139,123 +130,76 @@
 
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 10px 15px; border-radius: var(--r);
-    background: var(--painel2); color: var(--texto);
+    padding: 10px 16px; border-radius: var(--raio);
+    background: var(--superficie2); color: var(--texto);
     border: 1px solid var(--linha2); font: inherit; font-size: var(--t4); font-weight: 600;
     cursor: pointer; transition: .15s; white-space: nowrap; text-decoration: none;
   }
-  .btn:hover:not(:disabled) { background: var(--painel3); border-color: var(--texto3); }
-  .btn:disabled { opacity: .38; cursor: not-allowed; }
-  .btn[aria-pressed="true"] { background: rgba(255,61,113,.14); border-color: var(--marca); color: #ffd3de; }
-  .btn.p { padding: 7px 11px; font-size: var(--t5); }
+  .btn:hover:not(:disabled) { background: #212a36; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
   .btn.principal {
     background: linear-gradient(135deg, var(--marca), var(--marca2));
     border-color: transparent; color: #fff;
-    box-shadow: 0 6px 18px rgba(255,61,113,.28);
   }
   .btn.principal:hover:not(:disabled) { filter: brightness(1.09); }
-  .btn.principal:disabled { box-shadow: none; }
-  .btn.grande { padding: 12px 22px; font-size: var(--t3); }
+  .btn.p { padding: 7px 11px; font-size: var(--t5); }
+  .btn[aria-pressed="true"] { background: #2c1a22; border-color: var(--marca); color: #ffd0d9; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  /* ---------------------------------------------------------- escolhas */
+  .escolhas { display: grid; gap: 10px; }
+  .escolhas.quatro { grid-template-columns: repeat(auto-fit, minmax(156px, 1fr)); }
+
+  .escolha {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: var(--superficie); border: 2px solid var(--linha);
+    border-radius: var(--raio-g); padding: 14px;
+    color: var(--texto); font: inherit; transition: .15s;
+  }
+  .escolha:hover { border-color: var(--linha2); }
+  .escolha[aria-pressed="true"] { border-color: var(--marca); background: #1c1520; }
+  .escolha .ic {
+    width: 38px; height: 38px; border-radius: 10px; margin-bottom: 11px;
+    display: grid; place-items: center; font-size: 19px;
+    background: var(--superficie2); color: var(--texto2);
+  }
+  .escolha[aria-pressed="true"] .ic { background: #33202b; color: var(--marca); }
+  .escolha b { display: block; font-size: var(--t4); font-weight: 650; margin-bottom: 3px; }
+  .escolha span { font-size: var(--t6); color: var(--texto2); line-height: 1.45; display: block; }
+  .escolha .amostra {
+    width: 100%; aspect-ratio: 9/16; max-height: 128px; margin: 0 auto 10px;
+    border-radius: 8px; background: #05070b; object-fit: contain; display: block;
+  }
+
+  /* ---------------------------------------------------------- chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 13px; border-radius: 99px;
-    background: var(--painel2); color: var(--texto2);
-    border: 1px solid var(--linha2); font: inherit; font-size: var(--t5); font-weight: 500;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 15px; border-radius: 99px;
+    background: var(--superficie2); color: var(--texto2);
+    border: 1px solid var(--linha2); font: inherit; font-size: var(--t4); font-weight: 500;
     cursor: pointer; transition: .15s;
   }
   .chip:hover { border-color: var(--texto3); color: var(--texto); }
-  .chip[aria-pressed="true"] { background: rgba(255,61,113,.14); border-color: var(--marca); color: #ffd3de; }
+  .chip[aria-pressed="true"] { background: #2c1a22; border-color: var(--marca); color: #ffd0d9; }
 
-  .marcar { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; user-select: none; }
-  .marcar + .marcar { margin-top: 12px; }
-  .marcar input { width: 17px; height: 17px; accent-color: var(--marca); cursor: pointer; margin-top: 2px; flex: none; }
-  .marcar b { display: block; font-size: var(--t4); font-weight: 600; }
-  .marcar span { font-size: var(--t5); color: var(--texto2); line-height: 1.45; }
+  /* ---------------------------------------------------------- editor */
+  .editor-grade { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
+  @media (max-width: 860px) { .editor-grade { grid-template-columns: 1fr; } }
 
-  .faixa { display: flex; align-items: center; gap: 10px; margin-top: 11px; }
-  .faixa > span:first-child { font-size: var(--t5); color: var(--texto2); min-width: 96px; }
-  .faixa input[type=range] { flex: 1; accent-color: var(--marca); min-width: 0; }
-  .faixa .val { font-variant-numeric: tabular-nums; font-size: var(--t5); color: var(--texto2); min-width: 54px; text-align: right; }
-
-  .aviso {
-    display: flex; gap: 9px; align-items: flex-start;
-    font-size: var(--t5); line-height: 1.5; padding: 10px 12px; border-radius: var(--r);
-    background: rgba(69,198,255,.08); border: 1px solid #235068; color: #a8e0fa;
-  }
-  .aviso.erro { background: rgba(255,61,113,.10); border-color: #7d2438; color: #ffb0c1; }
-  .aviso.oculto { display: none; }
-  #erro { margin-bottom: 14px; }
-
-  .barra-fora { height: 6px; background: var(--painel2); border-radius: 99px; overflow: hidden; }
-  .barra-dentro { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--marca), var(--marca2)); transition: width .4s ease; }
-
-  /* ============================================================ fonte */
-  .fonte-vazia { display: grid; gap: 10px; }
-  .linha-link { display: flex; gap: 8px; }
-  .ou {
-    display: flex; align-items: center; gap: 10px;
-    color: var(--texto3); font-size: var(--t6); text-transform: uppercase; letter-spacing: 1px;
-  }
-  .ou::before, .ou::after { content: ''; height: 1px; background: var(--linha); flex: 1; }
-
-  .solta {
-    border: 1.5px dashed var(--linha2); border-radius: var(--r); padding: 18px;
-    text-align: center; cursor: pointer; transition: .15s; background: none;
-    color: var(--texto); font: inherit; width: 100%;
-  }
-  .solta:hover, .solta.sobre { border-color: var(--marca); background: rgba(255,61,113,.05); }
-  .solta .i { width: 22px; height: 22px; color: var(--texto3); margin-bottom: 6px; }
-  .solta b { display: block; font-size: var(--t4); font-weight: 650; }
-  .solta span { font-size: var(--t6); color: var(--texto3); }
-
-  .fonte-cheia { display: flex; gap: 13px; align-items: center; }
-  .fonte-cheia img {
-    width: 132px; aspect-ratio: 16/9; border-radius: 10px; object-fit: cover;
-    background: #000; flex: none;
-  }
-  .fonte-cheia .nome { font-size: var(--t3); font-weight: 650; word-break: break-word; }
-  .dados { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .dado {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 9px; border-radius: 7px; background: var(--painel2);
-    font-size: var(--t6); color: var(--texto2); font-variant-numeric: tabular-nums;
-  }
-  .dado .i { width: 12px; height: 12px; color: var(--texto3); }
-
-  /* ============================================================ formato */
-  .grade-formato { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .fmt {
-    display: flex; gap: 10px; align-items: center; text-align: left; cursor: pointer;
-    background: var(--painel2); border: 1.5px solid var(--linha); border-radius: var(--r);
-    padding: 9px; color: var(--texto); font: inherit; transition: .15s; min-width: 0;
-  }
-  .fmt:hover { border-color: var(--linha2); }
-  .fmt[aria-pressed="true"] { border-color: var(--marca); background: rgba(255,61,113,.08); }
-  /* O fundo aparece enquanto a miniatura de verdade nao chegou, pra caixa
-     vazia nao parecer imagem quebrada. */
-  .fmt img {
-    width: 34px; aspect-ratio: 9/16; border-radius: 5px; object-fit: cover; flex: none;
-    background: repeating-linear-gradient(135deg, #191e2a 0 5px, #141822 5px 10px);
-  }
-  .fmt .txt { min-width: 0; }
-  .fmt b { display: block; font-size: var(--t5); font-weight: 650; }
-  .fmt span { font-size: 10.5px; color: var(--texto2); line-height: 1.35; display: block; }
-
-  /* ============================================================ quadro */
-  #palco { position: relative; border-radius: var(--r); background: #000; user-select: none; touch-action: none; line-height: 0; }
-  #palco img { width: 100%; display: block; border-radius: var(--r); }
+  #palco { position: relative; border-radius: var(--raio); background: #000; user-select: none; touch-action: none; line-height: 0; }
+  #palco img { width: 100%; display: block; border-radius: var(--raio); }
 
   .caixa { position: absolute; border: 3px solid; border-radius: 7px; cursor: move; box-sizing: border-box; touch-action: none; }
-  .caixa.foco { box-shadow: 0 0 0 9999px rgba(4,6,10,.62); }
+  /* escurece o resto: fica claro qual area esta sendo marcada agora */
+  .caixa.foco { box-shadow: 0 0 0 9999px rgba(5,7,11,.6); }
   .caixa .tag {
     position: absolute; top: -2px; left: -2px; padding: 5px 9px;
-    border-radius: 6px 0 7px 0; color: #04060a;
+    border-radius: 6px 0 7px 0; color: #05070b;
     font: 700 var(--t6)/1 "Segoe UI", sans-serif; letter-spacing: .5px; pointer-events: none;
     display: flex; align-items: center; gap: 5px;
   }
-  .caixa .alca { position: absolute; width: 26px; height: 26px; border-radius: 7px; border: 2px solid #04060a; }
+  /* alcas nos 4 cantos, alvo grande o bastante pro dedo */
+  .caixa .alca { position: absolute; width: 26px; height: 26px; border-radius: 7px; border: 2px solid #05070b; }
   .caixa .alca[data-canto="se"] { left: -13px; top: -13px; cursor: nwse-resize; }
   .caixa .alca[data-canto="sd"] { right: -13px; top: -13px; cursor: nesw-resize; }
   .caixa .alca[data-canto="ie"] { left: -13px; bottom: -13px; cursor: nesw-resize; }
@@ -267,38 +211,94 @@
   #caixaJogo .tag, #caixaJogo .alca { background: var(--verde); }
   .caixa.mexendo { border-style: solid; filter: brightness(1.15); }
 
-  .quadro-grade { display: grid; grid-template-columns: 1fr 168px; gap: 12px; align-items: start; }
-  @media (max-width: 720px) { .quadro-grade { grid-template-columns: 1fr; } }
-  .cantos { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .cantos button { padding: 8px 4px; font-size: 10.5px; }
-
-  /* ============================================================ previa */
-  .previa-cx {
-    background: #04060a; border: 1px solid var(--linha); border-radius: var(--r);
-    padding: 7px; text-align: center; min-height: 180px;
-    display: grid; place-items: center;
+  .previa-lado { position: sticky; top: 74px; }
+  .previa-cx { background: #05070b; border: 1px solid var(--linha); border-radius: var(--raio); padding: 8px; text-align: center; }
+  .previa-cx img { width: 100%; max-height: 420px; object-fit: contain; border-radius: 7px; }
+  .previa-vazia { color: var(--texto3); font-size: var(--t5); padding: 70px 10px; }
+  .previa-titulo {
+    display: flex; align-items: center; gap: 7px; justify-content: center;
+    font-size: var(--t6); color: var(--texto2); font-weight: 700;
+    text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px;
   }
-  .previa-cx img { width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; }
-  .previa-vazia { color: var(--texto3); font-size: var(--t5); padding: 34px 8px; }
 
-  /* ============================================================ saida */
-  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 620px) { .duo { grid-template-columns: 1fr; } }
+  .faixa { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .faixa > span:first-child { font-size: var(--t5); color: var(--texto2); min-width: 100px; }
+  .faixa input[type=range] { flex: 1; accent-color: var(--marca); min-width: 0; }
+  .faixa .val { font-variant-numeric: tabular-nums; font-size: var(--t5); color: var(--texto2); min-width: 52px; text-align: right; }
 
-  /* ============================================================ processando */
-  .proc-grade { display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
-  @media (max-width: 980px) { .proc-grade { grid-template-columns: 1fr; } }
-  .etapas { display: flex; flex-direction: column; gap: 2px; margin: 14px 0 12px; }
+  .aviso {
+    display: flex; gap: 9px; align-items: flex-start;
+    font-size: var(--t5); line-height: 1.5; padding: 11px 13px; border-radius: var(--raio);
+    background: rgba(56,189,248,.08); border: 1px solid #23506b; color: #9fdcfa;
+    margin-bottom: 13px;
+  }
+  .aviso.erro { background: rgba(248,113,113,.09); border-color: #7f2c2c; color: #fca5a5; }
+  .aviso.oculto { display: none; }
+
+  .marcar { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; user-select: none; }
+  .marcar + .marcar { margin-top: 13px; }
+  .marcar input { width: 17px; height: 17px; accent-color: var(--marca); cursor: pointer; margin-top: 2px; flex: none; }
+  .marcar b { display: block; font-size: var(--t4); font-weight: 600; }
+  .marcar span { font-size: var(--t5); color: var(--texto2); line-height: 1.45; }
+
+  /* ---------------------------------------------------------- barra de acao */
+  .acao {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px;
+    background: rgba(10,13,19,.96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--linha);
+  }
+  .acao .resumo { flex: 1; min-width: 0; }
+  .acao .resumo .l1 { font-size: var(--t5); color: var(--texto2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acao .resumo .l2 { font-size: var(--t6); color: var(--texto3); margin-top: 2px; }
+  .acao .btn.principal { padding: 13px 24px; font-size: var(--t3); }
+
+  /* ---------------------------------------------------------- gaveta */
+  .fundo-gaveta { position: fixed; inset: 0; z-index: 50; background: rgba(5,7,11,.6); opacity: 0; pointer-events: none; transition: .2s; }
+  .fundo-gaveta.on { opacity: 1; pointer-events: auto; }
+  .gaveta {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; width: 380px; max-width: 92vw;
+    background: var(--superficie); border-left: 1px solid var(--linha);
+    transform: translateX(100%); transition: transform .22s ease;
+    display: flex; flex-direction: column;
+  }
+  .gaveta.on { transform: none; }
+  .gaveta-topo { display: flex; align-items: center; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--linha); }
+  .gaveta-topo h3 { font-size: var(--t2); font-weight: 650; flex: 1; }
+  .gaveta-corpo { padding: 18px; overflow-y: auto; flex: 1; }
+  .grupo + .grupo { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--linha); }
+  .grupo h4 {
+    display: flex; align-items: center; gap: 8px;
+    font-size: var(--t5); font-weight: 700; color: var(--texto2);
+    text-transform: uppercase; letter-spacing: .9px; margin-bottom: 13px;
+  }
+
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .trio button {
+    padding: 9px 6px; border-radius: 9px; font: inherit; font-size: var(--t5); font-weight: 600;
+    background: var(--superficie2); color: var(--texto2);
+    border: 1px solid var(--linha2); cursor: pointer; transition: .15s;
+  }
+  .trio button[aria-pressed="true"] { background: #2c1a22; border-color: var(--marca); color: #ffd0d9; }
+
+  /* ---------------------------------------------------------- processando */
+  #processando { display: none; }
+  #processando.on { display: block; }
+  .etapas { display: flex; flex-direction: column; gap: 2px; margin: 16px 0; }
   .etapa-linha {
     display: flex; align-items: center; gap: 11px;
-    padding: 9px 11px; border-radius: 10px; font-size: var(--t4);
+    padding: 10px 12px; border-radius: 10px; font-size: var(--t4);
     color: var(--texto3); transition: .2s;
   }
   .etapa-linha .marca-i { width: 20px; height: 20px; display: grid; place-items: center; flex: none; }
-  .etapa-linha.ativa { background: var(--painel2); color: var(--texto); font-weight: 600; }
+  .etapa-linha.ativa { background: var(--superficie2); color: var(--texto); font-weight: 600; }
   .etapa-linha.ativa .marca-i { color: var(--marca); animation: girar 1s linear infinite; }
   .etapa-linha.pronta { color: var(--verde); }
   @keyframes girar { to { transform: rotate(360deg); } }
+
+  .barra-fora { height: 7px; background: var(--superficie2); border-radius: 99px; overflow: hidden; }
+  .barra-dentro { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--marca), var(--marca2)); transition: width .4s ease; }
 
   details.detalhes summary {
     cursor: pointer; color: var(--texto3); font-size: var(--t5); font-weight: 600;
@@ -306,91 +306,57 @@
   }
   details.detalhes summary::-webkit-details-marker { display: none; }
   #registro {
-    margin-top: 10px; max-height: 130px; overflow-y: auto;
+    margin-top: 11px; max-height: 150px; overflow-y: auto;
     font: var(--t6)/1.7 Consolas, monospace; color: var(--texto3);
-    background: #04060a; border-radius: 9px; padding: 10px 12px;
+    background: #05070b; border-radius: 9px; padding: 11px 13px;
   }
   #registro div { white-space: pre-wrap; }
 
-  /* ============================================================ clipes */
-  .grade-clipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); gap: 14px; }
-  .clipe {
-    background: var(--painel); border: 1px solid var(--linha); border-radius: var(--rg);
-    overflow: hidden; display: flex; flex-direction: column;
-  }
+  /* ---------------------------------------------------------- resultado */
+  #resultado { display: none; }
+  #resultado.on { display: block; }
+  .res-topo { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .clipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 16px; }
+  .clipe { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio-g); overflow: hidden; display: flex; flex-direction: column; }
   .clipe video { width: 100%; aspect-ratio: 9/16; object-fit: contain; background: #000; display: block; }
-  .clipe-corpo { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-  .selo {
-    display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
-    padding: 3px 9px; border-radius: 99px; font-size: var(--t6); font-weight: 700;
-  }
-  .selo.otimo { background: rgba(69,224,138,.14); color: var(--verde); }
-  .selo.bom { background: rgba(163,230,53,.14); color: #a3e635; }
-  .selo.medio { background: rgba(255,201,60,.14); color: var(--amarelo); }
+  .clipe-corpo { padding: 13px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  .selo { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 4px 10px; border-radius: 99px; font-size: var(--t6); font-weight: 700; }
+  .selo.otimo { background: rgba(34,197,94,.14); color: var(--verde); }
+  .selo.bom { background: rgba(132,204,22,.14); color: #a3e635; }
+  .selo.medio { background: rgba(251,191,36,.14); color: var(--amarelo); }
   .selo.fraco { background: rgba(148,163,184,.12); color: #94a3b8; }
-  .selo.editado { background: rgba(69,198,255,.14); color: var(--azul); }
   .clipe-gancho { font-size: var(--t4); font-weight: 650; line-height: 1.35; }
-  .clipe-meta {
-    font-size: var(--t6); color: var(--texto2); font-variant-numeric: tabular-nums;
-    display: flex; align-items: flex-start; gap: 6px; line-height: 1.45;
-  }
-  .clipe-acoes { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; }
-  .clipe-acoes .btn { flex: 1; min-width: 0; }
-  .clipe-det { font-size: var(--t6); color: var(--texto2); line-height: 1.55; margin-top: 8px; }
-  .clipe-det .bloco + .bloco { margin-top: 8px; }
+  .clipe-meta { font-size: var(--t6); color: var(--texto2); font-variant-numeric: tabular-nums; display: flex; align-items: flex-start; gap: 6px; line-height: 1.45; }
+  .clipe-acoes { display: flex; gap: 7px; margin-top: auto; }
+  .clipe-acoes .btn { flex: 1; }
+  .clipe-det { font-size: var(--t6); color: var(--texto2); line-height: 1.55; margin-top: 9px; }
+  .clipe-det .bloco + .bloco { margin-top: 9px; }
   .alt {
     display: block; width: 100%; text-align: left; margin-top: 5px;
     font: inherit; font-size: var(--t6); line-height: 1.4;
     padding: 6px 9px; border-radius: 7px; cursor: pointer;
-    background: var(--painel2); color: var(--texto2); border: 1px solid var(--linha);
+    background: var(--superficie2); color: var(--texto2); border: 1px solid var(--linha);
   }
   .alt:hover { border-color: var(--marca); color: var(--texto); }
 
-  /* ============================================================ revisao */
-  .revisao { display: grid; grid-template-columns: 214px minmax(0,1fr) 316px; gap: 14px; align-items: start; }
-  @media (max-width: 1240px) { .revisao { grid-template-columns: 176px minmax(0,1fr); } .rev-lado { grid-column: 1 / -1; } }
-  @media (max-width: 780px) { .revisao { grid-template-columns: 1fr; } .trilho { flex-direction: row; overflow-x: auto; } }
-
-  .trilho { display: flex; flex-direction: column; gap: 7px; max-height: calc(100vh - 190px); overflow-y: auto; padding-right: 4px; }
-  .fita {
-    display: flex; gap: 9px; align-items: center; cursor: pointer; text-align: left;
-    padding: 7px; border-radius: 11px; border: 1.5px solid transparent;
-    background: var(--painel); color: var(--texto); font: inherit; transition: .15s; flex: none;
-  }
-  .fita:hover { background: var(--painel2); }
-  .fita[aria-pressed="true"] { border-color: var(--marca); background: rgba(255,61,113,.09); }
-  .fita img {
-    width: 38px; aspect-ratio: 9/16; border-radius: 5px; object-fit: cover;
-    background: #04060a; flex: none;
-  }
-  .fita .n { min-width: 0; }
-  .fita .n b { display: block; font-size: var(--t6); font-weight: 700; }
-  .fita .n span {
-    display: block; font-size: 10.5px; color: var(--texto2);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 118px;
-  }
-  .fita .pontos {
-    margin-left: auto; font-size: 10.5px; font-weight: 800; padding: 2px 6px;
-    border-radius: 5px; font-variant-numeric: tabular-nums; flex: none;
-  }
-
-  .rev-palco { display: grid; place-items: center; background: #04060a; border: 1px solid var(--linha); border-radius: var(--rg); padding: 12px; }
-  .rev-palco video { max-height: calc(100vh - 250px); max-width: 100%; aspect-ratio: 9/16; border-radius: 10px; background: #000; }
-  .rev-lado { display: flex; flex-direction: column; gap: 12px; }
-
-  .nav-rev { display: flex; align-items: center; gap: 8px; margin-top: 10px; justify-content: center; }
-  .nav-rev .conta { font-size: var(--t5); color: var(--texto2); font-variant-numeric: tabular-nums; min-width: 62px; text-align: center; }
-
-  /* ============================================================ ajuste */
+  /* ---------------------------------------------------------- ajuste do clipe */
   .ajuste { border-top: 1px solid var(--linha); margin-top: 4px; padding-top: 11px; display: none; }
   .ajuste.on { display: block; }
-  .ajuste textarea { min-height: 54px; font-size: var(--t5); font-weight: 600; text-transform: uppercase; line-height: 1.35; }
+  .ajuste label.rot { margin-bottom: 6px; }
+  .ajuste textarea {
+    min-height: 56px; font-size: var(--t5); font-weight: 600;
+    text-transform: uppercase; line-height: 1.35;
+  }
   .nudge { display: flex; align-items: center; gap: 4px; margin-top: 7px; }
-  .nudge > b { font-size: var(--t6); color: var(--texto2); font-weight: 600; width: 46px; flex: none; }
+  .nudge > b {
+    font-size: var(--t6); color: var(--texto2); font-weight: 600;
+    width: 48px; flex: none;
+  }
   .nudge button {
     padding: 5px 7px; border-radius: 7px; cursor: pointer;
-    background: var(--painel2); color: var(--texto2); border: 1px solid var(--linha2);
-    font: inherit; font-size: var(--t6); font-weight: 600; font-variant-numeric: tabular-nums;
+    background: var(--superficie2); color: var(--texto2);
+    border: 1px solid var(--linha2); font: inherit; font-size: var(--t6);
+    font-weight: 600; font-variant-numeric: tabular-nums;
   }
   .nudge button:hover:not(:disabled) { border-color: var(--marca); color: var(--texto); }
   .nudge button:disabled { opacity: .3; cursor: not-allowed; }
@@ -404,315 +370,299 @@
   }
   .ajuste .conta b { color: var(--texto); font-variant-numeric: tabular-nums; }
   .ajuste .conta .mudou { color: var(--amarelo); }
-  .refazendo { display: none; align-items: center; gap: 8px; font-size: var(--t6); color: var(--marca); margin-top: 10px; }
+  .refazendo {
+    display: none; align-items: center; gap: 8px;
+    font-size: var(--t6); color: var(--marca); margin-top: 10px;
+  }
   .refazendo.on { display: flex; }
   .refazendo .i { animation: girar 1s linear infinite; }
-
-  /* ============================================================ gaveta */
-  .fundo-gaveta { position: fixed; inset: 0; z-index: 50; background: rgba(4,6,10,.62); opacity: 0; pointer-events: none; transition: .2s; }
-  .fundo-gaveta.on { opacity: 1; pointer-events: auto; }
-  .gaveta {
-    position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; width: 380px; max-width: 92vw;
-    background: var(--painel); border-left: 1px solid var(--linha);
-    transform: translateX(100%); transition: transform .22s ease;
-    display: flex; flex-direction: column;
-  }
-  .gaveta.on { transform: none; }
-  .gaveta-topo { display: flex; align-items: center; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--linha); }
-  .gaveta-topo h3 { font-size: var(--t2); font-weight: 650; flex: 1; }
-  .gaveta-corpo { padding: 18px; overflow-y: auto; flex: 1; }
-  .grupo + .grupo { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--linha); }
-  .grupo h4 {
-    display: flex; align-items: center; gap: 8px;
-    font-size: var(--t5); font-weight: 700; color: var(--texto2);
-    text-transform: uppercase; letter-spacing: .9px; margin-bottom: 12px;
-  }
-  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-  .trio button {
-    padding: 9px 5px; border-radius: 9px; font: inherit; font-size: var(--t5); font-weight: 600;
-    background: var(--painel2); color: var(--texto2); border: 1px solid var(--linha2); cursor: pointer; transition: .15s;
-  }
-  .trio button[aria-pressed="true"] { background: rgba(255,61,113,.14); border-color: var(--marca); color: #ffd3de; }
-
-  .vista { display: none; }
-  .vista.on { display: block; }
+  .selo.editado { background: rgba(56,189,248,.14); color: var(--azul); }
 
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2b3243; border-radius: 9px; }
+  ::-webkit-scrollbar-thumb { background: #2a333f; border-radius: 9px; }
 </style>
 </head>
 <body>
 
-<div class="app">
+<div class="topo">
+  <div class="marca-logo"><i data-lucide="scissors" class="i"></i></div>
+  <h1>Cortador Automático</h1>
+  <button class="btn p" id="btnAjustes"><i data-lucide="settings-2" class="i"></i> Ajustes</button>
+</div>
 
-  <nav class="rail">
-    <div class="logo"><i data-lucide="scissors" class="i"></i></div>
-    <button id="navMontar" class="on"><i data-lucide="layout-grid" class="i"></i>Montar</button>
-    <button id="navClipes" disabled><i data-lucide="clapperboard" class="i"></i>Clipes</button>
-    <div class="espaco"></div>
-    <button id="btnAjustes"><i data-lucide="settings-2" class="i"></i>Ajustes</button>
-    <button id="btnPasta" disabled><i data-lucide="folder-open" class="i"></i>Pasta</button>
+<div class="pagina">
+
+  <div class="aviso erro oculto" id="erro"><i data-lucide="triangle-alert" class="i"></i><span id="erroTexto"></span></div>
+
+  <nav class="trilha" id="trilha">
+    <button data-ir="1" class="atual"><span class="num">1</span><span class="rot">Vídeo</span></button>
+    <button data-ir="2" disabled><span class="num">2</span><span class="rot">Enquadramento</span></button>
+    <button data-ir="3" disabled><span class="num">3</span><span class="rot">O que cortar</span></button>
   </nav>
 
-  <div class="palco">
-
-    <header class="cabeca">
-      <div class="tit">
-        <h1 id="tituloTela">Montar os cortes</h1>
-        <div class="sub" id="subTela">Escolha um vídeo pra começar</div>
-      </div>
-      <div id="acoesCabeca" style="display:flex; gap:8px; align-items:center"></div>
-      <button class="btn principal grande" id="btnGerar" disabled>
-        <i data-lucide="wand-sparkles" class="i"></i> Gerar os cortes
-      </button>
-    </header>
-
-    <div class="rolagem">
-      <div class="aviso erro oculto" id="erro"><i data-lucide="triangle-alert" class="i"></i><span id="erroTexto"></span></div>
-
-      <!-- ================================================= MONTAR -->
-      <section class="vista on" id="vistaMontar">
-        <div class="bento vazio" id="bento">
-
-          <div class="cx c-fonte acesa" id="cxFonte">
-            <h3><i data-lucide="file-video" class="i"></i> Vídeo <span class="fim" id="fonteEstado"></span></h3>
-
-            <div class="fonte-vazia" id="fonteVazia">
-              <div class="linha-link">
-                <input type="text" id="url" placeholder="Cole o link do YouTube, Kick ou Twitch" autocomplete="off">
-                <button class="btn" id="btnBaixar"><i data-lucide="download" class="i"></i> Baixar</button>
-              </div>
-              <div style="font-size:var(--t6); color:var(--texto3); display:flex; align-items:center; gap:8px">
-                <span id="dicaResolucao">Baixa em 1080p</span>
-                <button class="btn p" id="btnResolucao" style="padding:2px 8px; font-size:var(--t6)">mudar</button>
-              </div>
-
-              <div class="ou">ou</div>
-
-              <button class="solta" id="btnArquivo">
-                <i data-lucide="upload" class="i"></i>
-                <b id="arquivoTitulo">Escolher um vídeo do computador</b>
-                <span>ou arraste o arquivo aqui · MP4, MKV, MOV, AVI, WEBM</span>
-              </button>
-              <input type="file" id="arquivoReal" accept="video/*" style="display:none">
-
-              <div id="progresso" style="display:none">
-                <div class="barra-fora"><div class="barra-dentro" id="barraFonte"></div></div>
-                <div style="font-size:var(--t5); color:var(--texto2); margin-top:7px" id="statusFonte"></div>
-              </div>
-            </div>
-
-            <div class="fonte-cheia" id="fonteCheia" style="display:none">
-              <img id="videoMini" alt="">
-              <div style="flex:1; min-width:0">
-                <div class="nome" id="videoNome"></div>
-                <div class="dados" id="videoDados"></div>
-              </div>
-              <button class="btn p" id="btnTrocar"><i data-lucide="repeat" class="i"></i> Trocar</button>
-            </div>
-          </div>
-
-          <div class="cx c-formato">
-            <h3><i data-lucide="layout-template" class="i"></i> Enquadramento</h3>
-            <div class="grade-formato" id="formatos">
-              <button class="fmt" data-formato="split" aria-pressed="true">
-                <img data-amostra="split" alt="">
-                <div class="txt"><b>Rosto + jogo</b><span>com a linha no meio</span></div>
-              </button>
-              <button class="fmt" data-formato="foco" aria-pressed="false">
-                <img data-amostra="foco" alt="">
-                <div class="txt"><b>Só uma área</b><span>você marca o pedaço</span></div>
-              </button>
-              <button class="fmt" data-formato="vertical" aria-pressed="false">
-                <img data-amostra="vertical" alt="">
-                <div class="txt"><b>Tela cheia</b><span>corta as laterais</span></div>
-              </button>
-              <button class="fmt" data-formato="original" aria-pressed="false">
-                <img data-amostra="original" alt="">
-                <div class="txt"><b>Não mexer</b><span>pra editar depois</span></div>
-              </button>
-            </div>
-          </div>
-
-          <div class="cx c-quadro" id="cxQuadro" style="display:none">
-            <h3>
-              <i data-lucide="scan-face" class="i"></i> Onde fica cada coisa
-              <span class="fim" id="alvos" style="display:flex; gap:5px">
-                <button class="btn p" data-alvo="topo" aria-pressed="true"><i data-lucide="user" class="i"></i> Rosto</button>
-                <button class="btn p" data-alvo="baixo" aria-pressed="false"><i data-lucide="gamepad-2" class="i"></i> Jogo</button>
-              </span>
-            </h3>
-
-            <div class="aviso oculto" id="avisoWebcam" style="margin-bottom:11px">
-              <i data-lucide="sparkles" class="i"></i><span id="avisoWebcamTexto"></span>
-            </div>
-
-            <div class="quadro-grade">
-              <div>
-                <div id="palco">
-                  <img id="frameImg" alt="">
-                  <div class="caixa" id="caixaRosto">
-                    <span class="tag"><i data-lucide="user" class="i" style="width:11px;height:11px"></i> ROSTO</span>
-                    <i class="alca" data-canto="se"></i><i class="alca" data-canto="sd"></i>
-                    <i class="alca" data-canto="ie"></i><i class="alca" data-canto="id"></i>
-                  </div>
-                  <div class="caixa" id="caixaJogo">
-                    <span class="tag"><i data-lucide="gamepad-2" class="i" style="width:11px;height:11px"></i> <span id="tagJogoTxt">JOGO</span></span>
-                    <i class="alca" data-canto="se"></i><i class="alca" data-canto="sd"></i>
-                    <i class="alca" data-canto="ie"></i><i class="alca" data-canto="id"></i>
-                  </div>
-                </div>
-                <div style="font-size:var(--t6); color:var(--texto3); margin-top:9px; line-height:1.5">
-                  Arraste a caixa pra mover, puxe os cantos pra redimensionar, ou desenhe direto na imagem.
-                </div>
-                <div class="faixa">
-                  <span>Ver outro trecho</span>
-                  <input type="range" id="tempoFrame" min="0" max="100" value="15">
-                  <span class="val" id="tempoFrameTxt">–</span>
-                </div>
-              </div>
-
-              <div>
-                <label class="rot" style="font-size:var(--t6)">Atalhos de canto</label>
-                <div class="cantos" id="cantosRapidos">
-                  <button class="btn p" data-canto="se"><i data-lucide="arrow-up-left" class="i"></i> Sup. esq.</button>
-                  <button class="btn p" data-canto="sd"><i data-lucide="arrow-up-right" class="i"></i> Sup. dir.</button>
-                  <button class="btn p" data-canto="ie"><i data-lucide="arrow-down-left" class="i"></i> Inf. esq.</button>
-                  <button class="btn p" data-canto="id"><i data-lucide="arrow-down-right" class="i"></i> Inf. dir.</button>
-                </div>
-                <label class="rot" style="font-size:var(--t6); margin-top:14px">Momento do vídeo</label>
-                <div class="chips">
-                  <button class="chip" data-trecho="8" style="padding:6px 11px; font-size:10.5px">Começo</button>
-                  <button class="chip" data-trecho="50" style="padding:6px 11px; font-size:10.5px">Meio</button>
-                  <button class="chip" data-trecho="88" style="padding:6px 11px; font-size:10.5px">Fim</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="cx c-previa" id="cxPrevia" style="display:none">
-            <h3><i data-lucide="eye" class="i"></i> Como vai ficar</h3>
-            <div class="previa-cx" id="previaCx"><div class="previa-vazia">a prévia aparece aqui</div></div>
-
-            <div id="soSplit">
-              <div class="faixa"><span>Altura do rosto</span>
-                <input type="range" id="proporcao" min="15" max="60" value="32">
-                <span class="val" id="proporcaoTxt">32%</span></div>
-              <div class="faixa"><span>Linha divisória</span>
-                <input type="range" id="espessura" min="0" max="30" value="8">
-                <span class="val" id="espessuraTxt">8px</span></div>
-              <div class="faixa"><span>Cor da linha</span>
-                <input type="color" id="corLinha" value="#ffffff" style="flex:1; height:30px; padding:2px; cursor:pointer; background:var(--painel2); border:1px solid var(--linha2); border-radius:8px"></div>
-            </div>
-
-            <label class="marcar" style="margin-top:14px" id="marcaFocar">
-              <input type="checkbox" id="focarRosto" checked>
-              <div><b>Focar no rosto</b><span>Quando só aparece a cara dele, tira a divisão e enquadra o rosto.</span></div>
-            </label>
-          </div>
-
-          <div class="cx c-momentos">
-            <h3><i data-lucide="target" class="i"></i> O que você quer nos cortes</h3>
-            <div class="chips" id="chips">
-              <button class="chip" data-pedido="os melhores momentos para viralizar" aria-pressed="false"><i data-lucide="flame" class="i"></i> Melhores momentos</button>
-              <button class="chip" data-pedido="quando ele abre e revela algo raro" aria-pressed="false"><i data-lucide="gift" class="i"></i> Abriu algo raro</button>
-              <button class="chip" data-pedido="os momentos mais engraçados" aria-pressed="false"><i data-lucide="laugh" class="i"></i> Engraçados</button>
-              <button class="chip" data-pedido="quando ele consegue algo muito caro ou valioso" aria-pressed="false"><i data-lucide="gem" class="i"></i> Sorte absurda</button>
-              <button class="chip" data-pedido="quando dá errado e ele perde" aria-pressed="false"><i data-lucide="thumbs-down" class="i"></i> Deu ruim</button>
-              <button class="chip" data-pedido="os momentos de tensão, quando ele quase perde" aria-pressed="false"><i data-lucide="zap" class="i"></i> Tensão</button>
-              <button class="chip" data-pedido="quando ele explica ou dá uma dica" aria-pressed="false"><i data-lucide="lightbulb" class="i"></i> Dicas</button>
-            </div>
-            <textarea id="descricao" style="margin-top:11px" placeholder="Ou escreva com suas palavras: ex. quando vem o pet lendário e ele surta"></textarea>
-            <div class="aviso oculto" id="lido" style="margin-top:11px"><i data-lucide="sparkles" class="i"></i><span id="lidoTexto"></span></div>
-          </div>
-
-          <div class="cx c-saida">
-            <h3><i data-lucide="sliders-horizontal" class="i"></i> Quantidade e tamanho</h3>
-            <div class="duo">
-              <div>
-                <label class="rot"><i data-lucide="hash" class="i"></i> Quantos cortes</label>
-                <div class="chips" id="quantidades">
-                  <button class="chip" data-qtd="4" aria-pressed="false">4</button>
-                  <button class="chip" data-qtd="6" aria-pressed="false">6</button>
-                  <button class="chip" data-qtd="8" aria-pressed="true">8</button>
-                  <button class="chip" data-qtd="10" aria-pressed="false">10</button>
-                  <button class="chip" data-qtd="12" aria-pressed="false">12</button>
-                </div>
-              </div>
-              <div>
-                <label class="rot"><i data-lucide="timer" class="i"></i> Duração</label>
-                <div class="chips" id="duracoes">
-                  <button class="chip" data-dur="18-40" aria-pressed="false">20 a 40s</button>
-                  <button class="chip" data-dur="28-62" aria-pressed="true">30s a 1min</button>
-                  <button class="chip" data-dur="45-62" aria-pressed="false">45s a 1min</button>
-                </div>
-              </div>
-            </div>
-            <div style="font-size:var(--t6); color:var(--texto3); margin-top:11px; line-height:1.5">
-              Corte curto costuma ser assistido até o fim — e isso conta mais que a duração.
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ================================================= PROCESSANDO -->
-      <section class="vista" id="vistaProc">
-        <div class="proc-grade">
-          <div class="cx">
-            <h3><i data-lucide="loader-circle" class="i"></i> Trabalhando</h3>
-            <div class="barra-fora"><div class="barra-dentro" id="barra"></div></div>
-            <div class="etapas" id="etapas">
-              <div class="etapa-linha" data-etapa="lendo"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Abrindo o vídeo</div>
-              <div class="etapa-linha" data-etapa="audio"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Separando o áudio</div>
-              <div class="etapa-linha" data-etapa="transcricao"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Ouvindo e transcrevendo</div>
-              <div class="etapa-linha" data-etapa="analise"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Achando os melhores momentos</div>
-              <div class="etapa-linha" data-etapa="cortando"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Gerando os clipes</div>
-            </div>
-            <details class="detalhes"><summary><i data-lucide="terminal" class="i"></i> Ver detalhes</summary><div id="registro"></div></details>
-          </div>
-
-          <div class="cx" id="cxParciais">
-            <h3><i data-lucide="clapperboard" class="i"></i> Prontos até agora <span class="fim" id="contaParciais">0</span></h3>
-            <div class="grade-clipes" id="clipesParciais"></div>
-            <div id="semParciais" style="color:var(--texto3); font-size:var(--t5); padding:26px 0; text-align:center">
-              Os clipes vão aparecendo aqui um a um, sem esperar terminar tudo.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================================================= CLIPES -->
-      <section class="vista" id="vistaClipes">
-        <div class="grade-clipes" id="listaClipes"></div>
-
-        <div class="revisao" id="revisao" style="display:none">
-          <div class="trilho" id="trilho"></div>
-          <div>
-            <div class="rev-palco"><video id="revVideo" controls></video></div>
-            <div class="nav-rev">
-              <button class="btn p" id="revAnterior"><i data-lucide="chevron-left" class="i"></i></button>
-              <span class="conta" id="revConta">1 / 1</span>
-              <button class="btn p" id="revProximo"><i data-lucide="chevron-right" class="i"></i></button>
-              <span style="font-size:var(--t6); color:var(--texto3); margin-left:8px">use ← e →</span>
-            </div>
-          </div>
-          <div class="rev-lado" id="revLado"></div>
-        </div>
-      </section>
-
+  <div class="video-fixo" id="videoFixo">
+    <img id="videoMini" alt="">
+    <div style="flex:1; min-width:0">
+      <div class="nome" id="videoNome"></div>
+      <div class="meta" id="videoMeta"></div>
     </div>
+    <button class="btn p" id="btnTrocar"><i data-lucide="repeat" class="i"></i> Trocar</button>
   </div>
+
+  <!-- ============ 1 ============ -->
+  <section class="tela on" id="tela1">
+    <h2>De onde vem o vídeo</h2>
+    <p class="sub">Cole um link ou escolha um arquivo.</p>
+
+    <div class="cartao">
+      <label class="rot" for="url"><i data-lucide="link-2" class="i"></i> Link do vídeo</label>
+      <div style="display:flex; gap:8px">
+        <input type="text" id="url" placeholder="youtube.com/... · kick.com/... · twitch.tv/..." autocomplete="off">
+        <button class="btn" id="btnBaixar"><i data-lucide="download" class="i"></i> Baixar</button>
+      </div>
+      <div style="font-size:var(--t6); color:var(--texto3); margin-top:9px">
+        <span id="dicaResolucao">Vai baixar em 1080p</span> ·
+        <button class="btn p" id="btnResolucao" style="padding:2px 9px; font-size:var(--t6)">mudar</button>
+      </div>
+
+      <div id="progressoLink" style="display:none; margin-top:13px">
+        <div class="barra-fora"><div class="barra-dentro" id="barraLink"></div></div>
+        <div style="font-size:var(--t5); color:var(--texto2); margin-top:8px" id="statusLink"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center; color:var(--texto3); font-size:var(--t5); margin:14px 0">ou</div>
+
+    <button class="escolha" id="btnArquivo" style="text-align:center">
+      <div class="ic" style="margin:0 auto 11px"><i data-lucide="upload" class="i"></i></div>
+      <b id="arquivoTitulo">Escolher um vídeo do computador</b>
+      <span>MP4, MKV, MOV, AVI, WEBM</span>
+    </button>
+    <input type="file" id="arquivoReal" accept="video/*" style="display:none">
+
+    <div id="progressoEnvio" style="display:none; margin-top:13px">
+      <div class="barra-fora"><div class="barra-dentro" id="barraEnvio"></div></div>
+      <div style="font-size:var(--t5); color:var(--texto2); margin-top:8px" id="statusEnvio"></div>
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section class="tela" id="tela2">
+    <h2>Como enquadrar</h2>
+    <p class="sub">O formato do canal é o rosto em cima e o jogo embaixo.</p>
+
+    <div class="escolhas quatro" id="formatos" style="margin-bottom:16px">
+      <button class="escolha" data-formato="split" aria-pressed="true">
+        <img class="amostra" data-amostra="split" alt="">
+        <b>Rosto + jogo</b><span>O formato do canal, com a linha no meio</span>
+      </button>
+      <button class="escolha" data-formato="foco" aria-pressed="false">
+        <img class="amostra" data-amostra="foco" alt="">
+        <b>Só uma área</b><span>Você marca a parte que quer focar</span>
+      </button>
+      <button class="escolha" data-formato="vertical" aria-pressed="false">
+        <img class="amostra" data-amostra="vertical" alt="">
+        <b>Tela cheia</b><span>Corta as laterais, sem marcar nada</span>
+      </button>
+      <button class="escolha" data-formato="original" aria-pressed="false">
+        <img class="amostra" data-amostra="original" alt="">
+        <b>Não mexer</b><span>Mantém como está, pra editar depois</span>
+      </button>
+    </div>
+
+    <div id="editor" style="display:none">
+      <div class="aviso oculto" id="avisoWebcam"><i data-lucide="sparkles" class="i"></i><span id="avisoWebcamTexto"></span></div>
+
+      <div class="editor-grade">
+        <div>
+          <div class="cartao" style="padding:12px">
+            <div style="display:flex; gap:6px; margin-bottom:11px" id="alvos">
+              <button class="btn p" data-alvo="topo" aria-pressed="true"><i data-lucide="user" class="i"></i> Marcar o rosto</button>
+              <button class="btn p" data-alvo="baixo" aria-pressed="false"><i data-lucide="gamepad-2" class="i"></i> Marcar o jogo</button>
+            </div>
+
+            <div id="palco">
+              <img id="frameImg" alt="">
+              <div class="caixa" id="caixaRosto">
+                <span class="tag"><i data-lucide="user" class="i" style="width:11px;height:11px"></i> ROSTO</span>
+                <i class="alca" data-canto="se"></i><i class="alca" data-canto="sd"></i>
+                <i class="alca" data-canto="ie"></i><i class="alca" data-canto="id"></i>
+              </div>
+              <div class="caixa" id="caixaJogo">
+                <span class="tag"><i data-lucide="gamepad-2" class="i" style="width:11px;height:11px"></i> <span id="tagJogoTxt">JOGO</span></span>
+                <i class="alca" data-canto="se"></i><i class="alca" data-canto="sd"></i>
+                <i class="alca" data-canto="ie"></i><i class="alca" data-canto="id"></i>
+              </div>
+            </div>
+
+            <div style="font-size:var(--t6); color:var(--texto3); margin-top:10px; line-height:1.5">
+              Arraste a caixa pra mover, puxe os cantos pra redimensionar, ou arraste direto na imagem pra desenhar de novo.
+            </div>
+
+            <div class="faixa">
+              <span>Ver outro trecho</span>
+              <input type="range" id="tempoFrame" min="0" max="100" value="15">
+              <span class="val" id="tempoFrameTxt">–</span>
+            </div>
+            <div class="chips" style="margin-top:8px">
+              <button class="chip" data-trecho="8" style="padding:6px 12px; font-size:var(--t6)">Começo</button>
+              <button class="chip" data-trecho="50" style="padding:6px 12px; font-size:var(--t6)">Meio</button>
+              <button class="chip" data-trecho="88" style="padding:6px 12px; font-size:var(--t6)">Fim</button>
+            </div>
+          </div>
+
+          <div class="cartao" id="cantosRapidos" style="margin-top:12px">
+            <label class="rot"><i data-lucide="scan-face" class="i"></i> Onde está a webcam dele</label>
+            <div class="escolhas quatro" style="gap:6px">
+              <button class="btn p" data-canto="se"><i data-lucide="arrow-up-left" class="i"></i> Sup. esq.</button>
+              <button class="btn p" data-canto="sd"><i data-lucide="arrow-up-right" class="i"></i> Sup. dir.</button>
+              <button class="btn p" data-canto="ie"><i data-lucide="arrow-down-left" class="i"></i> Inf. esq.</button>
+              <button class="btn p" data-canto="id"><i data-lucide="arrow-down-right" class="i"></i> Inf. dir.</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="previa-lado">
+          <div class="previa-titulo"><i data-lucide="eye" class="i"></i> Como vai ficar</div>
+          <div class="previa-cx" id="previaCx"><div class="previa-vazia">a prévia aparece aqui</div></div>
+
+          <div id="soSplit">
+            <div class="faixa">
+              <span>Altura do rosto</span>
+              <input type="range" id="proporcao" min="15" max="60" value="32">
+              <span class="val" id="proporcaoTxt">32%</span>
+            </div>
+            <div class="faixa">
+              <span>Linha divisória</span>
+              <input type="range" id="espessura" min="0" max="30" value="8">
+              <span class="val" id="espessuraTxt">8px</span>
+            </div>
+            <div class="faixa">
+              <span>Cor da linha</span>
+              <input type="color" id="corLinha" value="#ffffff" style="flex:1; height:32px; padding:2px; cursor:pointer">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cartao" style="margin-top:12px">
+        <label class="marcar">
+          <input type="checkbox" id="focarRosto" checked>
+          <div>
+            <b>Focar no rosto quando aparecer só a cara dele</b>
+            <span>Nesses trechos tira a divisão e enquadra o rosto. Só muda quando tem certeza — errar aqui estragaria o corte.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section class="tela" id="tela3">
+    <h2>O que você quer nos cortes</h2>
+    <p class="sub">Escolha os tipos de momento. Pode marcar mais de um.</p>
+
+    <div class="cartao">
+      <div class="chips" id="chips">
+        <button class="chip" data-pedido="os melhores momentos para viralizar" aria-pressed="false"><i data-lucide="flame" class="i"></i> Melhores momentos</button>
+        <button class="chip" data-pedido="quando ele abre e revela algo raro" aria-pressed="false"><i data-lucide="gift" class="i"></i> Abriu e veio algo raro</button>
+        <button class="chip" data-pedido="os momentos mais engraçados" aria-pressed="false"><i data-lucide="laugh" class="i"></i> Engraçados</button>
+        <button class="chip" data-pedido="quando ele consegue algo muito caro ou valioso" aria-pressed="false"><i data-lucide="gem" class="i"></i> Sorte absurda</button>
+        <button class="chip" data-pedido="quando dá errado e ele perde" aria-pressed="false"><i data-lucide="thumbs-down" class="i"></i> Deu ruim</button>
+        <button class="chip" data-pedido="os momentos de tensão, quando ele quase perde" aria-pressed="false"><i data-lucide="zap" class="i"></i> Tensão</button>
+        <button class="chip" data-pedido="quando ele explica ou dá uma dica" aria-pressed="false"><i data-lucide="lightbulb" class="i"></i> Dicas</button>
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="rot" for="descricao">Quer explicar com suas palavras? <span style="font-weight:400; color:var(--texto3)">(opcional)</span></label>
+        <textarea id="descricao" placeholder="Ex: quando vem o pet lendário e ele fica surpreso"></textarea>
+      </div>
+
+      <div class="aviso oculto" id="lido" style="margin:14px 0 0"><i data-lucide="sparkles" class="i"></i><span id="lidoTexto"></span></div>
+    </div>
+
+    <div class="cartao">
+      <label class="rot"><i data-lucide="hash" class="i"></i> Quantos cortes</label>
+      <div class="chips" id="quantidades">
+        <button class="chip" data-qtd="4" aria-pressed="false">4</button>
+        <button class="chip" data-qtd="6" aria-pressed="false">6</button>
+        <button class="chip" data-qtd="8" aria-pressed="true">8</button>
+        <button class="chip" data-qtd="10" aria-pressed="false">10</button>
+        <button class="chip" data-qtd="12" aria-pressed="false">12</button>
+      </div>
+
+      <label class="rot" style="margin-top:18px"><i data-lucide="timer" class="i"></i> Duração de cada corte</label>
+      <div class="chips" id="duracoes">
+        <button class="chip" data-dur="18-40" aria-pressed="false">Curto · 20 a 40s</button>
+        <button class="chip" data-dur="28-62" aria-pressed="true">Médio · 30s a 1min</button>
+        <button class="chip" data-dur="45-62" aria-pressed="false">Longo · 45s a 1min</button>
+      </div>
+      <div style="font-size:var(--t6); color:var(--texto3); margin-top:10px; line-height:1.5">
+        Corte curto costuma ser assistido até o fim — e isso conta mais que a duração.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROCESSANDO ============ -->
+  <section id="processando">
+    <h2>Gerando seus cortes</h2>
+    <p class="sub" id="procSub">Os clipes aparecem aqui conforme ficam prontos.</p>
+
+    <div class="cartao">
+      <div class="barra-fora"><div class="barra-dentro" id="barra"></div></div>
+      <div class="etapas" id="etapas">
+        <div class="etapa-linha" data-etapa="lendo"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Abrindo o vídeo</div>
+        <div class="etapa-linha" data-etapa="audio"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Separando o áudio</div>
+        <div class="etapa-linha" data-etapa="transcricao"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Ouvindo e transcrevendo</div>
+        <div class="etapa-linha" data-etapa="analise"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Achando os melhores momentos</div>
+        <div class="etapa-linha" data-etapa="cortando"><span class="marca-i"><i data-lucide="circle" class="i"></i></span> Gerando os clipes</div>
+      </div>
+
+      <details class="detalhes">
+        <summary><i data-lucide="terminal" class="i"></i> Ver detalhes</summary>
+        <div id="registro"></div>
+      </details>
+    </div>
+
+    <div class="clipes" id="clipesParciais" style="margin-top:18px"></div>
+  </section>
+
+  <!-- ============ RESULTADO ============ -->
+  <section id="resultado">
+    <div class="res-topo">
+      <div>
+        <h2 id="resTitulo">Seus cortes</h2>
+        <p class="sub" style="margin:0" id="resSub"></p>
+      </div>
+      <div style="display:flex; gap:8px">
+        <button class="btn" id="btnPasta"><i data-lucide="folder-open" class="i"></i> Abrir a pasta</button>
+        <button class="btn principal" id="btnNovo"><i data-lucide="rotate-ccw" class="i"></i> Cortar outro</button>
+      </div>
+    </div>
+    <div class="clipes" id="listaClipes"></div>
+  </section>
+
+</div>
+
+<div class="acao" id="acao">
+  <div class="resumo">
+    <div class="l1" id="resumoL1">Escolha um vídeo pra começar</div>
+    <div class="l2" id="resumoL2"></div>
+  </div>
+  <button class="btn" id="btnVoltar" style="display:none"><i data-lucide="chevron-left" class="i"></i> Voltar</button>
+  <button class="btn principal" id="btnAvancar" disabled>Continuar <i data-lucide="chevron-right" class="i"></i></button>
 </div>
 
 <div class="fundo-gaveta" id="fundoGaveta"></div>
 <aside class="gaveta" id="gaveta">
   <div class="gaveta-topo">
-    <i data-lucide="settings-2" class="i"></i><h3>Ajustes</h3>
+    <i data-lucide="settings-2" class="i"></i>
+    <h3>Ajustes</h3>
     <button class="btn p" id="btnFechaGaveta"><i data-lucide="x" class="i"></i></button>
   </div>
   <div class="gaveta-corpo">
+
     <div class="grupo">
       <h4><i data-lucide="captions" class="i"></i> Legenda e gancho</h4>
       <label class="marcar">
@@ -723,7 +673,7 @@
         <input type="checkbox" id="legendar">
         <div><b>Legenda palavra por palavra</b><span>Estilo Shorts, embaixo do vídeo</span></div>
       </label>
-      <div style="margin-top:14px">
+      <div style="margin-top:15px">
         <label class="rot">Tamanho da legenda</label>
         <div class="trio" id="tamLegenda">
           <button data-tam="62" aria-pressed="false">Pequena</button>
@@ -759,7 +709,7 @@
         <input type="checkbox" id="picos" checked>
         <div><b>Procurar picos de reação</b><span>Acha onde a voz explode e a imagem muda. Deixa 1 a 3 min mais lento.</span></div>
       </label>
-      <div style="margin-top:14px">
+      <div style="margin-top:15px">
         <label class="rot" for="chaveIA">Chave da API Anthropic <span style="font-weight:400;color:var(--texto3)">(opcional)</span></label>
         <input type="password" id="chaveIA" placeholder="sk-ant-..." autocomplete="off">
         <div style="font-size:var(--t6); color:var(--texto3); margin-top:7px; line-height:1.5">
@@ -767,6 +717,7 @@
         </div>
       </div>
     </div>
+
   </div>
 </aside>
 
@@ -777,11 +728,11 @@
 
   if (location.protocol !== 'http:' && location.protocol !== 'https:') {
     document.body.innerHTML = '<div style="max-width:560px;margin:70px auto;text-align:center;' +
-      'font:15px/1.6 \'Segoe UI\',system-ui,sans-serif;color:#f0f3f8;padding:0 20px">' +
+      'font:15px/1.6 \'Segoe UI\',system-ui,sans-serif;color:#eef2f7;padding:0 20px">' +
       '<h1 style="font-size:21px;margin-bottom:14px">Esse não é o arquivo certo pra abrir</h1>' +
-      '<p style="color:#a3adbf;margin-bottom:20px">Este é só o desenho da tela. Quem corta o vídeo é o programa que roda por trás.</p>' +
-      '<div style="background:#10131b;border:1px solid #232838;border-radius:14px;padding:20px;text-align:left;color:#a3adbf">' +
-      'Feche esta janela, volte na pasta e dê dois cliques em <b style="color:#ff9f45">iniciar</b>. ' +
+      '<p style="color:#a6b0bf;margin-bottom:20px">Este é só o desenho da tela. Quem corta o vídeo é o programa que roda por trás.</p>' +
+      '<div style="background:#131822;border:1px solid #242c38;border-radius:14px;padding:20px;text-align:left;color:#a6b0bf">' +
+      'Feche esta janela, volte na pasta e dê dois cliques em <b style="color:#ff8a5c">iniciar</b>. ' +
       'Vai abrir uma janela preta — deixe ela aberta. A tela do programa abre sozinha.</div></div>';
     return;
   }
@@ -795,9 +746,8 @@
   // ------------------------------------------------------------ estado
   const LEMBRAR = 'cortador.preferencias.v1';
   let arquivo = null, duracaoVideo = 0, pastaSaida = null;
-  let formato = 'split', alvoAtual = 'topo';
+  let telaAtual = 1, formato = 'split', alvoAtual = 'topo';
   let temDialogoNativo = false, jaProcurou = null, amostrasFeitas = false;
-  let clipes = [], vistaClipes = 'grade', revAtual = 0;
   const idSessao = 'sid' + Math.random().toString(36).slice(2, 10);
 
   const cfg = {
@@ -831,57 +781,60 @@
   function erro(msg) {
     $('erroTexto').textContent = msg;
     $('erro').classList.remove('oculto');
-    document.querySelector('.rolagem').scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   const semErro = () => $('erro').classList.add('oculto');
 
-  // ------------------------------------------------------------ vistas
-  const naMontagem = () => $('vistaMontar').classList.contains('on');
+  // ------------------------------------------------------------ navegacao
+  function irPara(n) {
+    if (n > 1 && !arquivo) return;
+    telaAtual = n;
+    for (const i of [1, 2, 3]) $('tela' + i).classList.toggle('on', i === n);
 
-  function vista(nome) {
-    ['Montar', 'Proc', 'Clipes'].forEach((v) => $('vista' + v).classList.toggle('on', v === nome));
-    $('navMontar').classList.toggle('on', nome === 'Montar');
-    $('navClipes').classList.toggle('on', nome === 'Clipes');
-    $('btnGerar').style.display = nome === 'Montar' ? '' : 'none';
-    $('acoesCabeca').innerHTML = '';
+    document.querySelectorAll('#trilha button').forEach((b) => {
+      const i = Number(b.dataset.ir);
+      b.classList.toggle('atual', i === n);
+      b.classList.toggle('feito', i < n);
+      b.disabled = i > 1 && !arquivo;
+    });
 
-    if (nome === 'Montar') {
-      $('tituloTela').textContent = 'Montar os cortes';
-      resumo();
-    } else if (nome === 'Proc') {
-      $('tituloTela').textContent = 'Gerando seus cortes';
-    } else {
-      $('tituloTela').textContent = clipes.length + ' cortes prontos';
-      $('subTela').textContent = 'Do melhor pro pior. Use a revisão pra escolher rápido.';
-      montarAcoesClipes();
-    }
-    document.querySelector('.rolagem').scrollTo({ top: 0 });
+    $('btnVoltar').style.display = n > 1 ? '' : 'none';
+    $('btnAvancar').innerHTML = n === 3
+      ? '<i data-lucide="scissors" class="i"></i> Gerar os cortes'
+      : 'Continuar <i data-lucide="chevron-right" class="i"></i>';
+    icones($('btnAvancar'));
+
+    if (n === 2) { mostrarEditor(); gerarAmostras(); }
+    resumo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  $('navMontar').addEventListener('click', () => vista('Montar'));
-  $('navClipes').addEventListener('click', () => { if (clipes.length) vista('Clipes'); });
+  document.querySelectorAll('#trilha button').forEach((b) => {
+    b.addEventListener('click', () => irPara(Number(b.dataset.ir)));
+  });
+  $('btnVoltar').addEventListener('click', () => irPara(Math.max(1, telaAtual - 1)));
+  $('btnAvancar').addEventListener('click', () => { if (telaAtual < 3) irPara(telaAtual + 1); else processar(); });
 
   function resumo() {
-    $('bento').classList.toggle('vazio', !arquivo);
     if (!arquivo) {
-      $('btnGerar').disabled = true;
-      if (naMontagem()) $('subTela').textContent = 'Escolha um vídeo pra começar';
+      $('resumoL1').textContent = 'Escolha um vídeo pra começar';
+      $('resumoL2').textContent = '';
+      $('btnAvancar').disabled = true;
       return;
     }
-    $('btnGerar').disabled = false;
-    // A gaveta de ajustes abre em qualquer tela, e mexer nela chama resumo().
-    // Sem esta guarda o resumo da montagem sobrescrevia o texto da tela de clipes.
-    if (!naMontagem()) return;
+    $('btnAvancar').disabled = false;
     const nomeF = { split: 'Rosto + jogo', foco: 'Só uma área', vertical: 'Tela cheia', original: 'Sem mexer' }[formato];
     const dur = { '18-40': '20 a 40s', '28-62': '30s a 1min', '45-62': '45s a 1min' }[cfg.duracao];
     const partes = [nomeF, cfg.quantidade + ' cortes de ' + dur];
     if (cfg.gancho) partes.push('com gancho');
     if (cfg.legenda) partes.push('com legenda');
-    if (cfg.pedidos.length) partes.push(cfg.pedidos.length + ' tipo(s) de momento');
-    $('subTela').textContent = partes.join(' · ');
+    $('resumoL1').textContent = partes.join(' · ');
+    $('resumoL2').textContent = telaAtual === 3
+      ? 'Leva de 10 a 20 min. Não feche a janela preta.'
+      : (cfg.pedidos.length ? cfg.pedidos.length + ' tipo(s) de momento escolhido(s)' : '');
   }
 
-  // ------------------------------------------------------------ fonte
+  // ------------------------------------------------------------ tela 1
   fetch('/api/rede').then((x) => x.json()).then((r) => {
     temDialogoNativo = !!r.temDialogoNativo && !r.naRede;
     if (!temDialogoNativo) $('arquivoTitulo').textContent = 'Enviar um vídeo do seu aparelho';
@@ -899,48 +852,30 @@
     if (f) enviarArquivo(f);
   });
 
-  // arrastar o arquivo pra cima da caixa tambem funciona
-  const solta = $('btnArquivo');
-  ['dragenter', 'dragover'].forEach((e) => solta.addEventListener(e, (ev) => {
-    ev.preventDefault(); solta.classList.add('sobre');
-  }));
-  ['dragleave', 'drop'].forEach((e) => solta.addEventListener(e, (ev) => {
-    ev.preventDefault(); solta.classList.remove('sobre');
-  }));
-  solta.addEventListener('drop', (ev) => {
-    const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
-    if (f) enviarArquivo(f);
-  });
-
-  function mostrarProgresso(msg) {
-    $('progresso').style.display = 'block';
-    $('barraFonte').style.width = '0%';
-    $('statusFonte').textContent = msg;
-  }
-  const esconderProgresso = () => { $('progresso').style.display = 'none'; };
-
   async function enviarArquivo(f) {
     semErro();
-    mostrarProgresso('Enviando ' + f.name + '...');
+    $('progressoEnvio').style.display = 'block';
+    $('barraEnvio').style.width = '0%';
+    $('statusEnvio').textContent = 'Enviando ' + f.name + '...';
     let r;
     try {
       r = await fetch('/api/upload?nome=' + encodeURIComponent(f.name), { method: 'POST', body: f }).then((x) => x.json());
     } catch (_) {
-      esconderProgresso();
+      $('progressoEnvio').style.display = 'none';
       return erro('Falha no envio. Confira a conexão e tente de novo.');
     }
-    if (r.erro) { esconderProgresso(); return erro(r.erro); }
+    if (r.erro) { $('progressoEnvio').style.display = 'none'; return erro(r.erro); }
     ouvir(r.id, {
-      progresso: (d) => { $('barraFonte').style.width = d.pct + '%'; $('statusFonte').textContent = d.msg; },
-      baixado: (d) => { esconderProgresso(); usarVideo(d.caminho); },
-      erro: (m) => { esconderProgresso(); erro(m); },
+      progresso: (d) => { $('barraEnvio').style.width = d.pct + '%'; $('statusEnvio').textContent = d.msg; },
+      baixado: (d) => { $('progressoEnvio').style.display = 'none'; usarVideo(d.caminho); },
+      erro: (m) => { $('progressoEnvio').style.display = 'none'; erro(m); },
     });
   }
 
   const RESOLUCOES = [[1080, '1080p'], [1440, '1440p'], [0, 'a melhor que tiver']];
   function mostrarResolucao() {
     const r = RESOLUCOES.find((x) => x[0] === cfg.resolucao) || RESOLUCOES[0];
-    $('dicaResolucao').textContent = 'Baixa em ' + r[1];
+    $('dicaResolucao').textContent = 'Vai baixar em ' + r[1];
   }
   mostrarResolucao();
   $('btnResolucao').addEventListener('click', () => {
@@ -956,16 +891,19 @@
 
     semErro();
     $('btnBaixar').disabled = true;
-    mostrarProgresso('Consultando o link...');
+    $('progressoLink').style.display = 'block';
+    $('barraLink').style.width = '0%';
+    $('statusLink').textContent = 'Consultando o link...';
 
     try {
       const info = await fetch('/api/espiar', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }),
       }).then((x) => x.json());
       if (info.erro) throw new Error(info.erro);
-      $('statusFonte').textContent = info.titulo + (info.duracao ? ' · ' + mmss(info.duracao) : '');
+      $('statusLink').textContent = info.titulo + (info.duracao ? ' · ' + mmss(info.duracao) : '');
     } catch (e) {
-      $('btnBaixar').disabled = false; esconderProgresso();
+      $('btnBaixar').disabled = false;
+      $('progressoLink').style.display = 'none';
       return erro(e.message || 'Não consegui ler esse link.');
     }
 
@@ -973,33 +911,24 @@
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, limiteAltura: cfg.resolucao }),
     }).then((x) => x.json());
-    if (r.erro) { $('btnBaixar').disabled = false; esconderProgresso(); return erro(r.erro); }
+    if (r.erro) { $('btnBaixar').disabled = false; $('progressoLink').style.display = 'none'; return erro(r.erro); }
 
     ouvir(r.id, {
-      progresso: (d) => { $('barraFonte').style.width = d.pct + '%'; $('statusFonte').textContent = d.msg; },
-      baixado: (d) => { $('btnBaixar').disabled = false; esconderProgresso(); usarVideo(d.caminho); },
-      erro: (m) => { $('btnBaixar').disabled = false; esconderProgresso(); erro(m); },
+      progresso: (d) => { $('barraLink').style.width = d.pct + '%'; $('statusLink').textContent = d.msg; },
+      baixado: (d) => { $('btnBaixar').disabled = false; $('progressoLink').style.display = 'none'; usarVideo(d.caminho); },
+      erro: (m) => { $('btnBaixar').disabled = false; $('progressoLink').style.display = 'none'; erro(m); },
     });
   }
   $('btnBaixar').addEventListener('click', baixarLink);
   $('url').addEventListener('keydown', (e) => { if (e.key === 'Enter') baixarLink(); });
 
-  function dado(icone, texto) {
-    return '<span class="dado"><i data-lucide="' + icone + '" class="i"></i>' + esc(texto) + '</span>';
-  }
-
   async function usarVideo(caminho) {
     arquivo = caminho;
     jaProcurou = null; amostrasFeitas = false;
     semErro();
-
-    $('fonteVazia').style.display = 'none';
-    $('fonteCheia').style.display = 'flex';
-    $('cxFonte').classList.remove('acesa');
-    $('fonteEstado').textContent = 'carregado';
     $('videoNome').textContent = caminho.split(/[\\/]/).pop();
-    $('videoDados').innerHTML = dado('loader-circle', 'lendo...');
-    icones($('videoDados'));
+    $('videoMeta').textContent = 'lendo...';
+    $('videoFixo').classList.add('on');
 
     try {
       const info = await fetch('/api/info', {
@@ -1007,11 +936,7 @@
       }).then((x) => x.json());
       if (info.erro) throw new Error(info.erro);
       duracaoVideo = info.duracao || 0;
-      $('videoDados').innerHTML =
-        dado('clock', mmss(duracaoVideo)) +
-        dado('monitor', info.largura + 'x' + info.altura) +
-        dado(info.temAudio ? 'volume-2' : 'volume-x', info.temAudio ? 'com áudio' : 'SEM ÁUDIO');
-      icones($('videoDados'));
+      $('videoMeta').textContent = mmss(duracaoVideo) + ' · ' + info.largura + 'x' + info.altura;
       if (!info.temAudio) erro('Esse vídeo não tem áudio. Sem áudio não dá pra achar os cortes.');
 
       const r = await fetch('/api/frame', {
@@ -1019,31 +944,22 @@
         body: JSON.stringify({ video: caminho, segundo: duracaoVideo * 0.15, sid: idSessao }),
       });
       if (r.ok) $('videoMini').src = URL.createObjectURL(await r.blob());
-    } catch (e) {
-      $('videoDados').innerHTML = dado('triangle-alert', 'não consegui ler');
-      icones($('videoDados'));
-    }
+    } catch (_) { $('videoMeta').textContent = ''; }
 
-    mostrarEditor();
-    gerarAmostras();
-    resumo();
+    irPara(2);
   }
 
   $('btnTrocar').addEventListener('click', () => {
     arquivo = null; duracaoVideo = 0; jaProcurou = null; amostrasFeitas = false;
-    $('fonteVazia').style.display = '';
-    $('fonteCheia').style.display = 'none';
-    $('cxFonte').classList.add('acesa');
-    $('fonteEstado').textContent = '';
-    $('cxQuadro').style.display = 'none';
-    $('cxPrevia').style.display = 'none';
-    resumo();
+    $('videoFixo').classList.remove('on');
+    $('editor').style.display = 'none';
+    irPara(1);
   });
 
-  // ------------------------------------------------------------ formato
-  document.querySelectorAll('#formatos .fmt').forEach((b) => {
+  // ------------------------------------------------------------ tela 2
+  document.querySelectorAll('#formatos .escolha').forEach((b) => {
     b.addEventListener('click', () => {
-      document.querySelectorAll('#formatos .fmt').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      document.querySelectorAll('#formatos .escolha').forEach((x) => x.setAttribute('aria-pressed', 'false'));
       b.setAttribute('aria-pressed', 'true');
       formato = cfg.formato = b.dataset.formato;
       guardar();
@@ -1053,7 +969,6 @@
       $('cantosRapidos').style.display = ehSplit ? '' : 'none';
       $('alvos').style.display = ehSplit ? 'flex' : 'none';
       $('caixaRosto').style.display = ehSplit ? '' : 'none';
-      $('marcaFocar').style.display = ehSplit ? '' : 'none';
       $('tagJogoTxt').textContent = formato === 'foco' ? 'ÁREA' : 'JOGO';
       if (!ehSplit) alvoAtual = 'baixo';
 
@@ -1080,11 +995,10 @@
 
   function mostrarEditor() {
     const liga = precisaEditor();
-    $('cxQuadro').style.display = liga ? '' : 'none';
-    $('cxPrevia').style.display = arquivo ? '' : 'none';
-    if (!arquivo) return;
-    if (liga) { foco(); carregarFrame(); if (formato === 'split') acharWebcam(); }
-    else agendarPrevia();
+    $('editor').style.display = liga ? '' : 'none';
+    if (!liga) return;
+    foco(); carregarFrame();
+    if (formato === 'split') acharWebcam();
   }
 
   const segundoDoSlider = () => duracaoVideo
@@ -1249,16 +1163,16 @@
       if (r && r.area) {
         Object.assign(cfg.recorte.topo, r.area);
         aplicar(); guardar(); agendarPrevia();
-        $('avisoWebcamTexto').innerHTML = 'Achei a webcam no <b>canto ' + esc(r.canto) + '</b> e já marquei. Confira na prévia.';
+        $('avisoWebcamTexto').innerHTML = 'Achei a webcam no <b>canto ' + esc(r.canto) + '</b> e já marquei. Confira na prévia ao lado.';
       } else {
-        $('avisoWebcamTexto').innerHTML = 'Não achei a webcam sozinho. <b>Marque onde ela está</b> nos atalhos de canto.';
+        $('avisoWebcamTexto').innerHTML = 'Não achei a webcam sozinho. <b>Marque onde ela está</b> nos atalhos abaixo.';
       }
     } catch (_) { $('avisoWebcam').classList.add('oculto'); }
   }
 
   let esperaPrevia = null, previaRodando = false;
   async function atualizarPrevia() {
-    if (!arquivo || previaRodando) return;
+    if (!arquivo || !precisaEditor() || previaRodando) return;
     previaRodando = true;
     const cx = $('previaCx');
     const antiga = cx.querySelector('img');
@@ -1298,7 +1212,7 @@
     }
   }
 
-  // ------------------------------------------------------------ momentos
+  // ------------------------------------------------------------ tela 3
   document.querySelectorAll('#chips .chip').forEach((b) => {
     if (cfg.pedidos.indexOf(b.dataset.pedido) >= 0) b.setAttribute('aria-pressed', 'true');
     b.addEventListener('click', () => {
@@ -1368,7 +1282,7 @@
   $('picos').addEventListener('change', () => { cfg.picos = $('picos').checked; guardar(); });
 
   // aplica o formato lembrado (dispara os ajustes de tela junto)
-  const btnFmt = document.querySelector('#formatos .fmt[data-formato="' + cfg.formato + '"]');
+  const btnFmt = document.querySelector('#formatos .escolha[data-formato="' + cfg.formato + '"]');
   if (btnFmt) btnFmt.click();
 
   // ------------------------------------------------------------ gaveta
@@ -1399,23 +1313,21 @@
   };
   const ETAPAS = ['lendo', 'audio', 'transcricao', 'analise', 'cortando'];
 
-  $('btnGerar').addEventListener('click', processar);
-
   function processar() {
     if (!arquivo) return;
     const faixa = cfg.duracao.split('-');
     const vel = VELOCIDADES[cfg.velocidade] || VELOCIDADES.equilibrado;
     const descricao = cfg.pedidos.concat([$('descricao').value.trim()]).filter(Boolean).join('. ');
 
-    clipes = [];
+    document.querySelectorAll('.tela').forEach((t) => t.classList.remove('on'));
+    $('trilha').style.display = 'none';
+    $('acao').style.display = 'none';
+    $('resultado').classList.remove('on');
     $('listaClipes').innerHTML = '';
     $('clipesParciais').innerHTML = '';
-    $('semParciais').style.display = '';
-    $('contaParciais').textContent = '0';
     $('registro').innerHTML = '';
-    $('barra').style.width = '0%';
+    $('processando').classList.add('on');
     semErro();
-    vista('Proc');
 
     fetch('/api/processar', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1429,9 +1341,16 @@
         idioma: 'pt', usarIA: !!$('chaveIA').value.trim(), chaveIA: $('chaveIA').value.trim(),
       }),
     }).then((x) => x.json()).then((r) => {
-      if (r.erro) { vista('Montar'); return erro(r.erro); }
+      if (r.erro) { voltar(); return erro(r.erro); }
       acompanhar(r.id);
     });
+  }
+
+  function voltar() {
+    $('processando').classList.remove('on');
+    $('trilha').style.display = '';
+    $('acao').style.display = '';
+    irPara(3);
   }
 
   function acompanhar(id) {
@@ -1452,26 +1371,22 @@
             icones(alvo);
           }
         });
-        $('subTela').textContent = d.msg || '';
+        $('procSub').textContent = d.msg || '';
         registrar(d.msg);
       },
       info: (d) => registrar('Vídeo de ' + d.duracaoTexto + ' · ' + d.largura + 'x' + d.altura),
       aviso: (d) => registrar('• ' + d.msg),
-      'clipe-pronto': (d) => {
-        $('semParciais').style.display = 'none';
-        $('clipesParciais').appendChild(cartao(d.clipe));
-        $('contaParciais').textContent = $('clipesParciais').children.length;
-      },
+      'clipe-pronto': (d) => $('clipesParciais').appendChild(cartao(d.clipe)),
       fim: (d) => {
         pastaSaida = d.pasta;
-        clipes = d.clipes;
-        revAtual = 0;
-        $('navClipes').disabled = false;
-        $('btnPasta').disabled = false;
-        desenharClipes();
-        vista('Clipes');
+        $('processando').classList.remove('on');
+        $('resTitulo').textContent = d.clipes.length + ' cortes prontos';
+        $('resSub').textContent = 'Do melhor pro pior. Clique em Baixar pra salvar.';
+        $('listaClipes').innerHTML = '';
+        d.clipes.forEach((c) => $('listaClipes').appendChild(cartao(c)));
+        $('resultado').classList.add('on');
       },
-      erro: (m) => { vista('Montar'); erro(m); },
+      erro: (m) => { voltar(); erro(m); },
     });
   }
 
@@ -1485,94 +1400,19 @@
     r.scrollTop = r.scrollHeight;
   }
 
-  // ------------------------------------------------------------ clipes
-  function montarAcoesClipes() {
-    const cx = $('acoesCabeca');
-    cx.innerHTML =
-      '<button class="btn p" id="vGrade" aria-pressed="' + (vistaClipes === 'grade') + '"><i data-lucide="layout-grid" class="i"></i> Grade</button>' +
-      '<button class="btn p" id="vRevisao" aria-pressed="' + (vistaClipes === 'revisao') + '"><i data-lucide="gallery-vertical-end" class="i"></i> Revisão</button>' +
-      '<button class="btn p" id="btnNovo"><i data-lucide="rotate-ccw" class="i"></i> Cortar outro</button>';
-    icones(cx);
-    $('vGrade').addEventListener('click', () => { vistaClipes = 'grade'; desenharClipes(); montarAcoesClipes(); });
-    $('vRevisao').addEventListener('click', () => { vistaClipes = 'revisao'; desenharClipes(); montarAcoesClipes(); });
-    $('btnNovo').addEventListener('click', () => vista('Montar'));
-  }
-
-  function desenharClipes() {
-    const grade = vistaClipes === 'grade';
-    $('listaClipes').style.display = grade ? '' : 'none';
-    $('revisao').style.display = grade ? 'none' : '';
-
-    if (grade) {
-      $('listaClipes').innerHTML = '';
-      clipes.forEach((c) => $('listaClipes').appendChild(cartao(c)));
-    } else {
-      desenharTrilho();
-      irParaClipe(Math.min(revAtual, clipes.length - 1));
-    }
-  }
-
-  const COR_NOTA = { otimo: 'var(--verde)', bom: '#a3e635', medio: 'var(--amarelo)', fraco: '#94a3b8' };
-
-  function desenharTrilho() {
-    const t = $('trilho');
-    t.innerHTML = '';
-    clipes.forEach((c, i) => {
-      const b = document.createElement('button');
-      b.className = 'fita';
-      b.setAttribute('aria-pressed', String(i === revAtual));
-      b.innerHTML =
-        (c.miniatura ? '<img src="/arquivo?p=' + encodeURIComponent(c.miniatura) + '" alt="">' : '<img alt="">') +
-        '<div class="n"><b>Clipe ' + c.numero + '</b><span>' + esc(c.titulo) + '</span></div>' +
-        '<span class="pontos" style="color:' + (COR_NOTA[c.rotulo.cor] || '#94a3b8') + '">' + c.nota + '</span>';
-      b.addEventListener('click', () => irParaClipe(i));
-      t.appendChild(b);
-    });
-  }
-
-  function irParaClipe(i) {
-    if (!clipes.length) return;
-    revAtual = Math.max(0, Math.min(clipes.length - 1, i));
-    const c = clipes[revAtual];
-
-    document.querySelectorAll('#trilho .fita').forEach((b, k) => {
-      b.setAttribute('aria-pressed', String(k === revAtual));
-      if (k === revAtual) b.scrollIntoView({ block: 'nearest' });
-    });
-
-    const v = $('revVideo');
-    v.src = '/arquivo?p=' + encodeURIComponent(c.arquivo) + '&v=' + Date.now();
-    if (c.miniatura) v.poster = '/arquivo?p=' + encodeURIComponent(c.miniatura);
-    $('revConta').textContent = (revAtual + 1) + ' / ' + clipes.length;
-    $('revAnterior').disabled = revAtual === 0;
-    $('revProximo').disabled = revAtual === clipes.length - 1;
-
-    const lado = $('revLado');
-    lado.innerHTML = '';
-    lado.appendChild(cartao(c, true));
-  }
-
-  $('revAnterior').addEventListener('click', () => irParaClipe(revAtual - 1));
-  $('revProximo').addEventListener('click', () => irParaClipe(revAtual + 1));
-  document.addEventListener('keydown', (e) => {
-    if (!$('vistaClipes').classList.contains('on') || vistaClipes !== 'revisao') return;
-    if (e.target.matches('input, textarea')) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); irParaClipe(revAtual - 1); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); irParaClipe(revAtual + 1); }
-  });
-
-  // ------------------------------------------------------------ cartao
+  // ------------------------------------------------------------ cartao de clipe
   const PASSOS = [[-2, '-2s'], [-0.5, '-½s'], [0.5, '+½s'], [2, '+2s']];
 
-  /** @param {boolean} semVideo  no modo revisao o player ja esta no centro */
-  function cartao(c, semVideo) {
+  function cartao(c) {
     const div = document.createElement('div');
     div.className = 'clipe';
     div.dataset.numero = c.numero;
 
     // O ajuste comeca sempre do que esta gravado no arquivo agora
     const est = {
-      inicio: c.inicio, duracao: c.duracao,
+      inicio: c.inicio,
+      duracao: c.duracao,
+      gancho: c.gancho || '',
       base: { inicio: c.inicio, duracao: c.duracao, gancho: c.gancho || '' },
     };
 
@@ -1585,17 +1425,17 @@
       '<button data-lado="' + lado + '" data-passo="' + s[0] + '">' + s[1] + '</button>').join('');
 
     div.innerHTML =
-      (semVideo ? '' : '<video src="' + src + '" ' + (capa ? 'poster="' + capa + '"' : '') + ' controls preload="none"></video>') +
+      '<video src="' + src + '" ' + (capa ? 'poster="' + capa + '"' : '') + ' controls preload="none"></video>' +
       '<div class="clipe-corpo">' +
         '<div style="display:flex; gap:6px; flex-wrap:wrap">' +
           '<span class="selo ' + c.rotulo.cor + '"><i data-lucide="' +
-            (c.rotulo.cor === 'otimo' ? 'trophy' : 'flame') + '" class="i"></i> ' + esc(c.rotulo.texto) + ' · ' + c.nota + '</span>' +
+            (c.rotulo.cor === 'otimo' ? 'trophy' : 'flame') + '" class="i"></i> ' + esc(c.rotulo.texto) + '</span>' +
           (c.editado ? '<span class="selo editado"><i data-lucide="pencil" class="i"></i> Editado</span>' : '') +
         '</div>' +
         '<div class="clipe-gancho">' + esc(c.titulo) + '</div>' +
-        '<div class="clipe-meta"><i data-lucide="clock" class="i"></i><span>' +
+        '<div class="clipe-meta"><i data-lucide="clock" class="i"></i><span class="tempos">' +
           c.inicioTexto + ' → ' + c.fimTexto + ' · ' + c.duracao + 's · ' + c.tamanhoMb + ' MB</span></div>' +
-        (c.observacao ? '<div class="clipe-meta" style="color:#8bd9fb"><i data-lucide="info" class="i"></i><span>' + esc(c.observacao) + '</span></div>' : '') +
+        (c.observacao ? '<div class="clipe-meta" style="color:#7dd3fc"><i data-lucide="info" class="i"></i><span>' + esc(c.observacao) + '</span></div>' : '') +
 
         '<div class="clipe-acoes">' +
           '<a class="btn p" href="' + src + '" download="' + esc(c.nomeArquivo) + '"><i data-lucide="download" class="i"></i> Baixar</a>' +
@@ -1605,7 +1445,7 @@
 
         '<div class="ajuste">' +
           '<label class="rot"><i data-lucide="type" class="i"></i> Texto que aparece na tela</label>' +
-          '<textarea class="campo-gancho" placeholder="Sem texto na tela" maxlength="90">' + esc(c.gancho || '') + '</textarea>' +
+          '<textarea class="campo-gancho" placeholder="Sem texto na tela" maxlength="90">' + esc(est.gancho) + '</textarea>' +
           '<div style="font-size:var(--t6); color:var(--texto3); margin-top:5px">' +
             'Aparece nos primeiros 4 segundos. Deixe vazio pra tirar.</div>' +
 
@@ -1614,8 +1454,9 @@
           '<div class="nudge"><b>Fim</b>' + nudge('fim') + '<span class="marca-tempo t-fim"></span></div>' +
 
           '<div class="conta">' +
-            '<span>Duração: <b class="t-dur"></b></span><span class="t-antes"></span>' +
-            '<button class="btn p t-reset" style="margin-left:auto"><i data-lucide="undo-2" class="i"></i> Como estava</button>' +
+            '<span>Duração: <b class="t-dur"></b></span>' +
+            '<span class="t-antes"></span>' +
+            '<button class="btn p t-reset" style="margin-left:auto"><i data-lucide="undo-2" class="i"></i> Do jeito que estava</button>' +
           '</div>' +
 
           '<button class="btn principal t-refazer" style="width:100%; margin-top:12px" disabled>' +
@@ -1645,7 +1486,7 @@
     return div;
   }
 
-  // ------------------------------------------------------------ ajustar
+  // ------------------------------------------------------------ ajustar clipe
   function ligarAjuste(div, c, est) {
     const cx = div.querySelector('.ajuste');
     const campo = div.querySelector('.campo-gancho');
@@ -1659,9 +1500,11 @@
       if (abrindo) campo.focus();
     });
 
-    const mudou = () => est.inicio !== est.base.inicio ||
-                        est.duracao !== est.base.duracao ||
-                        campo.value.trim() !== est.base.gancho;
+    function mudou() {
+      return est.inicio !== est.base.inicio ||
+             est.duracao !== est.base.duracao ||
+             campo.value.trim() !== est.base.gancho;
+    }
 
     function pintar() {
       div.querySelector('.t-inicio').textContent = mmss(est.inicio);
@@ -1679,8 +1522,11 @@
       // nao deixa passar do comeco do video nem ficar curto demais
       div.querySelectorAll('.nudge button').forEach((b) => {
         const passo = Number(b.dataset.passo);
-        if (b.dataset.lado === 'inicio') b.disabled = (est.inicio + passo < 0) || (est.duracao - passo < 3);
-        else b.disabled = est.duracao + passo < 3;
+        if (b.dataset.lado === 'inicio') {
+          b.disabled = (est.inicio + passo < 0) || (est.duracao - passo < 3);
+        } else {
+          b.disabled = est.duracao + passo < 3;
+        }
       });
     }
 
@@ -1702,7 +1548,8 @@
     campo.addEventListener('input', pintar);
 
     div.querySelector('.t-reset').addEventListener('click', () => {
-      est.inicio = est.base.inicio; est.duracao = est.base.duracao;
+      est.inicio = est.base.inicio;
+      est.duracao = est.base.duracao;
       campo.value = est.base.gancho;
       pintar();
     });
@@ -1718,31 +1565,28 @@
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             arquivo: c.arquivo, numero: c.numero,
-            inicio: est.inicio, duracao: est.duracao, gancho: campo.value.trim(),
+            inicio: est.inicio, duracao: est.duracao,
+            gancho: campo.value.trim(),
           }),
         }).then((x) => x.json());
       } catch (_) {
         status.classList.remove('on'); botao.disabled = false;
-        return erro('Não consegui falar com o programa. Ele ainda está aberto?');
+        return erro('Nao consegui falar com o programa. Ele ainda esta aberto?');
       }
-      if (r.erro) { status.classList.remove('on'); botao.disabled = false; return erro(r.erro); }
+      if (r.erro) {
+        status.classList.remove('on'); botao.disabled = false;
+        return erro(r.erro);
+      }
 
       ouvir(r.id, {
         progresso: (d) => { div.querySelector('.t-status').textContent = d.msg; },
         aviso: (d) => registrar(d.msg),
         'clipe-refeito': (d) => {
-          // troca na lista pra grade e revisao mostrarem a mesma coisa
-          clipes = clipes.map((x) => (x.numero === d.clipe.numero ? d.clipe : x));
-          if (vistaClipes === 'grade') {
-            const novo = cartao(d.clipe);
-            novo.querySelector('.ajuste').classList.add('on');
-            div.replaceWith(novo);
-          } else {
-            desenharTrilho();
-            irParaClipe(revAtual);
-            const aberto = $('revLado').querySelector('.ajuste');
-            if (aberto) aberto.classList.add('on');
-          }
+          // troca o cartao inteiro: o video, os tempos e o selo de editado
+          const novo = cartao(d.clipe);
+          novo.querySelector('.ajuste').classList.add('on');
+          div.replaceWith(novo);
+          novo.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         },
         erro: (m) => { status.classList.remove('on'); botao.disabled = false; erro(m); },
       });
@@ -1752,11 +1596,17 @@
   }
 
   $('btnPasta').addEventListener('click', () => {
-    if (!pastaSaida) return;
     fetch('/api/abrir', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ caminho: pastaSaida }),
     });
+  });
+  $('btnNovo').addEventListener('click', () => {
+    $('resultado').classList.remove('on');
+    $('trilha').style.display = '';
+    $('acao').style.display = '';
+    $('barra').style.width = '0%';
+    irPara(3);
   });
 
   resumo();

@@ -15,22 +15,13 @@ COMO USAR (o dia a dia)
 3. Cole o link do vídeo (YouTube, Kick, Twitch) ou clique pra
    escolher um arquivo do computador.
 
-4. A tela de montagem mostra tudo de uma vez, em quadros:
+4. O programa te leva por 3 telas, uma de cada vez:
+      1 - Vídeo          de onde ele vem
+      2 - Enquadramento  como a tela vai ficar
+      3 - O que cortar   que tipo de momento você quer
 
-      VÍDEO             de onde ele vem
-      ENQUADRAMENTO     os 4 formatos, cada um com uma prévia
-                        feita do SEU vídeo
-      ONDE FICA CADA    a imagem do vídeo pra você marcar onde
-      COISA             está a webcam e onde está o jogo
-      COMO VAI FICAR    o resultado em 9:16, atualizado na hora
-      O QUE VOCÊ QUER   os tipos de momento
-      QUANTIDADE        quantos cortes e de que tamanho
-
-   Os dois quadros do meio só aparecem quando fazem sentido pro
-   formato escolhido - no "Tela cheia" não tem o que marcar.
-
-   O resumo do que vai ser feito fica embaixo do título, lá em cima,
-   e o botão "Gerar os cortes" fica sempre visível no canto.
+   A barra de baixo mostra o resumo do que vai ser feito e o botão
+   pra continuar. Clique em "Gerar os cortes" no fim.
 
 5. Espere. Ele vai:
       - separar o áudio
@@ -38,16 +29,7 @@ COMO USAR (o dia a dia)
       - achar os melhores momentos
       - cortar, enquadrar em 9:16 e gravar a legenda
 
-6. No fim ele te leva pra tela de clipes, que tem duas formas de
-   olhar (o botão fica em cima, à direita):
-
-      GRADE    todos lado a lado, pra bater o olho no conjunto
-      REVISÃO  um clipe grande no meio, a lista do lado e os
-               controles à direita. Use as setas do teclado
-               ← e → pra passar de um pro outro. É o modo
-               bom pra escolher o que vai postar.
-
-   Cada clipe traz:
+6. No fim aparecem os clipes na tela, cada um com:
       - o vídeo pronto pra assistir ali mesmo
       - nota de engajamento de 0 a 100
       - título sugerido
@@ -56,21 +38,11 @@ COMO USAR (o dia a dia)
       - em "Ver detalhes": o porquê de ter pontuado, outros
         títulos sugeridos e a fala do trecho
 
-7. Nao gostou de algum? Clique em "Ajustar" (funciona nos dois modos).
+7. Nao gostou de algum? Clique em "Ajustar" no cartao do clipe.
    Da pra reescrever o texto que aparece na tela e esticar ou
    encurtar o corte. Veja mais abaixo.
 
 8. Os arquivos ficam na pasta   saida\
-
-
-A BARRA DA ESQUERDA
--------------------
-
-  MONTAR    volta pra tela de montagem
-  CLIPES    volta pros clipes gerados (acende quando existem)
-  AJUSTES   abre a gaveta: legenda, gancho, velocidade, ordem
-            e a chave da API
-  PASTA     abre a pasta saida\ no Windows
 
 
 QUANTO TEMPO DEMORA
