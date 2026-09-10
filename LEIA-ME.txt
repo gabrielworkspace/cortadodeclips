@@ -308,6 +308,22 @@ SE DER PROBLEMA
 "Não encontrei fala nenhuma"
     O vídeo está sem áudio ou só tem música.
 
+Saíram menos cortes do que eu pedi
+    Não é defeito. O programa avisa na tela de resultado por que,
+    com os números do SEU vídeo.
+
+    O limite não é a duração do vídeo: é quanto dele tem FALA.
+    Cada corte precisa começar e terminar numa frase inteira, então
+    trecho de música, luta ou gameplay calado não vira corte.
+
+    Um trailer de cinema de 2:50, por exemplo, costuma ter só uns
+    1:20 de fala, picada em blocos curtos separados por música.
+    Dali não saem 12 cortes de 30s - saem uns 4.
+
+    O que ajuda:
+      - pedir cortes mais curtos (o aviso te diz quantos sairiam)
+      - usar vídeo mais longo, ou com mais gente falando
+
 A janela fechou sozinha
     Abra o iniciar.bat de novo. A janela preta precisa ficar aberta.
 

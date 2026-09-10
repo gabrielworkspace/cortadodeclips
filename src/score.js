@@ -719,4 +719,58 @@ function encontrarCortes(transcricao, energia, opcoes) {
   }));
 }
 
-module.exports = { encontrarCortes, montarFrases, achatarPalavras, mmss, rotulo };
+/**
+ * Por que nao deu pra tirar tantos cortes quanto a pessoa pediu.
+ *
+ * Cada corte precisa comecar e terminar numa frase inteira, entao o teto nao
+ * e a duracao do video: e quanto dele tem alguem falando, e em que pedacos.
+ * Um trailer de cinema de 3 minutos pode ter so 1 minuto de fala, picado em
+ * blocos curtos separados por musica - e ai nao ha 12 cortes pra tirar.
+ *
+ * @returns {object} { falado, duracao, blocos, teto, tetoCurto, minCurto, maxCurto }
+ */
+function diagnosticarCortes(transcricao, duracaoVideo, opcoes) {
+  opcoes = opcoes || {};
+  const minDur = opcoes.minDur || MIN_DUR;
+  const maxDur = opcoes.maxDur || MAX_DUR;
+  const frases = montarFrases(achatarPalavras(transcricao));
+
+  // Quanto teria de cortes se a gente empacotasse sem sobrepor nada. E o
+  // maximo honesto: mais que isso so repetindo trecho.
+  function empacotar(min, max) {
+    const cand = [];
+    for (let i = 0; i < frases.length; i++) {
+      for (let fim = i; fim < frases.length; fim++) {
+        const dur = frases[fim].fim - frases[i].inicio;
+        if (dur > max) break;
+        if (dur >= min) cand.push({ inicio: frases[i].inicio, fim: frases[fim].fim });
+      }
+    }
+    cand.sort((a, b) => a.fim - b.fim);   // termina antes = deixa mais espaco pro resto
+    let ultimo = -1, n = 0;
+    for (const c of cand) if (c.inicio >= ultimo) { n++; ultimo = c.fim; }
+    return n;
+  }
+
+  // Blocos de fala: silencio de 8s ou mais separa um do outro.
+  const blocos = [];
+  let falado = 0;
+  for (const f of frases) {
+    const ult = blocos[blocos.length - 1];
+    if (ult && f.inicio - ult.fim < 8) ult.fim = f.fim;
+    else blocos.push({ inicio: f.inicio, fim: f.fim });
+  }
+  for (const b of blocos) falado += b.fim - b.inicio;
+
+  const minCurto = 15, maxCurto = 30;
+  return {
+    falado: Math.round(falado),
+    duracao: Math.round(duracaoVideo || 0),
+    blocos: blocos.length,
+    teto: empacotar(minDur, maxDur),
+    tetoCurto: empacotar(minCurto, maxCurto),
+    minCurto, maxCurto,
+  };
+}
+
+module.exports = { encontrarCortes, diagnosticarCortes, montarFrases, achatarPalavras, mmss, rotulo };

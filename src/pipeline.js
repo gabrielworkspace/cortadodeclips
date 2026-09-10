@@ -10,7 +10,7 @@ const path = require('path');
 const media = require('./media');
 const legenda = require('./legenda');
 const momentos = require('./momentos');
-const { encontrarCortes, achatarPalavras, mmss } = require('./score');
+const { encontrarCortes, diagnosticarCortes, achatarPalavras, mmss } = require('./score');
 const { gerarCopy, gerarGanchoDeTela } = require('./copy');
 const { interpretar } = require('./intencao');
 const animacao = require('./animacao');
@@ -247,6 +247,16 @@ async function processar(opcoes, avisar) {
     }
   }
 
+  // Pediu 12 e sairam 3? A pessoa merece saber por que, na hora, em vez de
+  // achar que o programa quebrou.
+  const pedidos = opcoes.quantidade || 8;
+  let recado = null;
+  if (cortes.length < pedidos) {
+    recado = explicarPoucos(cortes.length, pedidos,
+      diagnosticarCortes(transcricao, info.duracao, opcoes), opcoes);
+    avisar({ tipo: 'aviso', msg: recado.titulo });
+  }
+
   cortes = ordenarCortes(cortes, opcoes.ordem);
 
   // A copy do post: titulo que promete algo, sempre baseado no que foi dito
@@ -322,9 +332,9 @@ async function processar(opcoes, avisar) {
   fs.writeFileSync(path.join(pastaSaida, 'RELATORIO.txt'), textoDoRelatorio(relatorio), 'utf8');
 
   emitir(100, 'pronto', 'Tudo pronto! ' + prontos.length + ' clipes na pasta de saida.');
-  avisar({ tipo: 'fim', pasta: pastaSaida, clipes: prontos });
+  avisar({ tipo: 'fim', pasta: pastaSaida, clipes: prontos, recado });
 
-  return { pasta: pastaSaida, clipes: prontos };
+  return { pasta: pastaSaida, clipes: prontos, recado };
 }
 
 /**
@@ -401,6 +411,37 @@ function quebrar(texto, largura) {
   return linhas.join('\n');
 }
 
+
+/**
+ * Vira o diagnostico em frase de gente.
+ * @returns {object} { titulo, detalhe, sugestao }
+ */
+function explicarPoucos(sairam, pedidos, d, opcoes) {
+  const titulo = 'Você pediu ' + pedidos + ' cortes e saíram ' + sairam +
+                 ' — é o que esse vídeo dá.';
+
+  const partes = [];
+  const pct = d.duracao ? Math.round((d.falado / d.duracao) * 100) : 0;
+  partes.push('O vídeo tem ' + mmss(d.duracao) + ', mas só ' + mmss(d.falado) +
+              ' dele tem alguém falando (' + pct + '%)' +
+              (d.blocos > 1 ? ', divididos em ' + d.blocos + ' trechos separados por música ou ação' : '') + '.');
+  partes.push('Cada corte precisa começar e terminar numa frase inteira, ' +
+              'então o que sobra pra cortar é isso — não a duração do vídeo.');
+
+  let sugestao = null;
+  const minAtual = opcoes.minDur || 28;
+  const maxAtual = opcoes.maxDur || 62;
+  if (d.tetoCurto > d.teto) {
+    sugestao = 'Com cortes mais curtos (' + d.minCurto + ' a ' + d.maxCurto +
+               's) dava pra tirar até ' + d.tetoCurto + ' desse mesmo vídeo, ' +
+               'em vez de ' + d.teto + ' com os ' + minAtual + ' a ' + maxAtual + 's de agora.';
+  } else if (sairam >= d.teto) {
+    sugestao = 'Não dá pra tirar mais sem repetir trecho: ' + d.teto +
+               ' é o máximo que cabe sem dois cortes mostrarem a mesma coisa.';
+  }
+
+  return { titulo, detalhe: partes.join(' '), sugestao };
+}
 
 /**
  * Deixa a animacao pronta pro ffmpeg, ou devolve null se nao for usar.

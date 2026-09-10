@@ -691,6 +691,15 @@
         <button class="btn principal" id="btnNovo"><i data-lucide="rotate-ccw" class="i"></i> Cortar outro</button>
       </div>
     </div>
+    <div class="aviso oculto" id="recado" style="margin-bottom:16px">
+      <i data-lucide="info" class="i" style="margin-top:2px"></i>
+      <div>
+        <b id="recadoTitulo"></b>
+        <div id="recadoDetalhe" style="margin-top:5px; color:#cfe9f7"></div>
+        <div id="recadoSugestao" style="margin-top:8px; font-weight:600"></div>
+      </div>
+    </div>
+
     <div class="clipes" id="listaClipes"></div>
   </section>
 
@@ -1428,6 +1437,7 @@
     $('resultado').classList.remove('on');
     $('listaClipes').innerHTML = '';
     $('clipesParciais').innerHTML = '';
+    mostrarRecado(null);
     $('registro').innerHTML = '';
     $('processando').classList.add('on');
     semErro();
@@ -1490,12 +1500,25 @@
         $('processando').classList.remove('on');
         $('resTitulo').textContent = d.clipes.length + ' cortes prontos';
         $('resSub').textContent = 'Do melhor pro pior. Clique em Baixar pra salvar.';
+        mostrarRecado(d.recado);
         $('listaClipes').innerHTML = '';
         d.clipes.forEach((c) => $('listaClipes').appendChild(cartao(c)));
         $('resultado').classList.add('on');
       },
       erro: (m) => { voltar(); erro(m); },
     });
+  }
+
+  // Pediu 12 e sairam 4? Isso aparece na cara, nao escondido no log - senao
+  // a pessoa fica achando que o programa quebrou.
+  function mostrarRecado(r) {
+    if (!r || !r.titulo) { $('recado').classList.add('oculto'); return; }
+    $('recadoTitulo').textContent = r.titulo;
+    $('recadoDetalhe').textContent = r.detalhe || '';
+    $('recadoSugestao').textContent = r.sugestao || '';
+    $('recadoSugestao').style.display = r.sugestao ? '' : 'none';
+    $('recado').classList.remove('oculto');
+    icones($('recado'));
   }
 
   function registrar(msg) {
