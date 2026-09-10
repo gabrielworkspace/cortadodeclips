@@ -11,6 +11,12 @@ Você joga um vídeo (ou cola um link do YouTube/Kick), e ele:
 5. corta, enquadra em 9:16, grava a legenda e o gancho na tela
 6. entrega os clipes ordenados do melhor para o pior, com títulos sugeridos
 
+Para cortes de um conteúdo específico dá para pôr uma **animação de fundo
+transparente por cima** do clipe — a do Street Fighter é a primeira. Ela repete
+até cobrir a fatia do corte que você escolher (60% por padrão), e o gancho e a
+legenda ficam por cima dela. Basta jogar um `.gif` na pasta `animacoes/` para
+ele aparecer na lista.
+
 Depois de pronto, cada clipe tem um botão **Ajustar**: dá para reescrever o
 gancho que aparece na tela e esticar ou encurtar o corte, com o resultado
 saindo em segundos — ele reaproveita a transcrição em vez de ouvir tudo
@@ -50,6 +56,7 @@ deixou.
 | Pasta | O que tem |
 |---|---|
 | `src/` | o código do programa |
+| `animacoes/` | os gifs transparentes que entram por cima dos clipes |
 | `py/` | o script de transcrição (Python) |
 | `saida/` | os clipes gerados — organizados por vídeo e data |
 | `baixados/` | os vídeos baixados de link |

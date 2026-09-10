@@ -602,6 +602,57 @@
         Corte curto costuma ser assistido até o fim — e isso conta mais que a duração.
       </div>
     </div>
+
+    <div class="cartao">
+      <label class="rot"><i data-lucide="sparkles" class="i"></i> O que aparece na tela do clipe</label>
+
+      <label class="marcar">
+        <input type="checkbox" id="textoGancho" checked>
+        <div>
+          <b>Gancho na tela</b>
+          <span>Texto grande nos primeiros 4 segundos, tirado da própria fala. Segura quem assiste sem som.</span>
+        </div>
+      </label>
+
+      <label class="marcar">
+        <input type="checkbox" id="legendar">
+        <div>
+          <b>Legenda palavra por palavra</b>
+          <span>Estilo Shorts, embaixo do vídeo. A palavra que está sendo dita fica amarela.</span>
+        </div>
+      </label>
+
+      <label class="marcar">
+        <input type="checkbox" id="usarAnimacao">
+        <div>
+          <b>Animação por cima do vídeo</b>
+          <span>Pros cortes de Street Fighter. A animação entra por cima, de fundo transparente, e repete até cobrir o pedaço que você escolher.</span>
+        </div>
+      </label>
+
+      <div id="opcoesAnimacao" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--linha)">
+        <label class="rot" for="qualAnimacao">Qual animação</label>
+        <select id="qualAnimacao"></select>
+
+        <div class="faixa">
+          <span>Quanto do clipe</span>
+          <input type="range" id="coberturaAnim" min="10" max="100" step="5" value="60">
+          <span class="val" id="coberturaAnimTxt">60%</span>
+        </div>
+        <div style="font-size:var(--t6); color:var(--texto3); margin-top:6px; line-height:1.5" id="dicaCobertura"></div>
+
+        <div class="faixa">
+          <span>Transparência</span>
+          <input type="range" id="opacidadeAnim" min="20" max="100" step="5" value="100">
+          <span class="val" id="opacidadeAnimTxt">100%</span>
+        </div>
+
+        <div class="aviso oculto" id="semAnimacao" style="margin-top:12px">
+          <i data-lucide="triangle-alert" class="i"></i>
+          <span>Não achei nenhuma animação. Jogue um arquivo <b>.gif</b> de fundo transparente na pasta <b>animacoes</b> e recarregue esta tela.</span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ============ PROCESSANDO ============ -->
@@ -664,16 +715,8 @@
   <div class="gaveta-corpo">
 
     <div class="grupo">
-      <h4><i data-lucide="captions" class="i"></i> Legenda e gancho</h4>
-      <label class="marcar">
-        <input type="checkbox" id="textoGancho" checked>
-        <div><b>Gancho na tela</b><span>Texto grande nos primeiros segundos — segura quem assiste sem som</span></div>
-      </label>
-      <label class="marcar">
-        <input type="checkbox" id="legendar">
-        <div><b>Legenda palavra por palavra</b><span>Estilo Shorts, embaixo do vídeo</span></div>
-      </label>
-      <div style="margin-top:15px">
+      <h4><i data-lucide="captions" class="i"></i> Legenda</h4>
+      <div>
         <label class="rot">Tamanho da legenda</label>
         <div class="trio" id="tamLegenda">
           <button data-tam="62" aria-pressed="false">Pequena</button>
@@ -761,6 +804,7 @@
     velocidade: 'equilibrado', tamLegenda: 78,
     gancho: true, legenda: false, focarRosto: true, picos: true,
     resolucao: 1080, pedidos: [],
+    animacao: { ligada: false, id: null, cobertura: 0.6, opacidade: 1 },
   };
 
   // o que ele ajustou fica salvo - remarcar a webcam todo dia era um saco
@@ -768,8 +812,10 @@
     const salvo = JSON.parse(localStorage.getItem(LEMBRAR) || 'null');
     if (salvo) {
       const rec = Object.assign(cfg.recorte, salvo.recorte || {});
+      const ani = Object.assign(cfg.animacao, salvo.animacao || {});
       Object.assign(cfg, salvo);
       cfg.recorte = rec;
+      cfg.animacao = ani;
     }
   } catch (_) {}
   const guardar = () => { try { localStorage.setItem(LEMBRAR, JSON.stringify(cfg)); } catch (_) {} };
@@ -828,6 +874,9 @@
     const partes = [nomeF, cfg.quantidade + ' cortes de ' + dur];
     if (cfg.gancho) partes.push('com gancho');
     if (cfg.legenda) partes.push('com legenda');
+    if (cfg.animacao.ligada && cfg.animacao.id) {
+      partes.push('com animação em ' + Math.round(cfg.animacao.cobertura * 100) + '%');
+    }
     $('resumoL1').textContent = partes.join(' · ');
     $('resumoL2').textContent = telaAtual === 3
       ? 'Leva de 10 a 20 min. Não feche a janela preta.'
@@ -1255,7 +1304,7 @@
     });
   }
   grupo('#quantidades', 'data-qtd', (v) => { cfg.quantidade = Number(v); });
-  grupo('#duracoes', 'data-dur', (v) => { cfg.duracao = v; });
+  grupo('#duracoes', 'data-dur', (v) => { cfg.duracao = v; if (window.__mostrarAnim) window.__mostrarAnim(); });
   grupo('#ordem', 'data-ordem', (v) => { cfg.ordem = v; });
   grupo('#tamLegenda', 'data-tam', (v) => { cfg.tamLegenda = Number(v); });
   grupo('#velocidade', 'data-vel', (v) => {
@@ -1280,6 +1329,60 @@
   $('textoGancho').addEventListener('change', () => { cfg.gancho = $('textoGancho').checked; guardar(); resumo(); });
   $('legendar').addEventListener('change', () => { cfg.legenda = $('legendar').checked; guardar(); resumo(); });
   $('picos').addEventListener('change', () => { cfg.picos = $('picos').checked; guardar(); });
+
+  // ------------------------------------------------------------ animacao
+  const a = cfg.animacao;
+
+  function mostrarAnimacao() {
+    $('opcoesAnimacao').style.display = a.ligada ? '' : 'none';
+    $('coberturaAnimTxt').textContent = Math.round(a.cobertura * 100) + '%';
+    $('opacidadeAnimTxt').textContent = Math.round(a.opacidade * 100) + '%';
+    // o numero abstrato vira segundos: e assim que a pessoa pensa no corte.
+    // Usa o meio da faixa, nao o teto - a maioria dos cortes cai por ali.
+    const faixa = cfg.duracao.split('-').map(Number);
+    const tipico = Math.round((faixa[0] + faixa[1]) / 2);
+    $('dicaCobertura').textContent = 'Num corte de ' + tipico + 's, a animação fica '
+      + Math.round(tipico * a.cobertura) + 's na tela, contando do começo. Ela repete sozinha.';
+  }
+
+  $('usarAnimacao').checked = a.ligada;
+  $('coberturaAnim').value = Math.round(a.cobertura * 100);
+  $('opacidadeAnim').value = Math.round(a.opacidade * 100);
+
+  $('usarAnimacao').addEventListener('change', () => {
+    a.ligada = $('usarAnimacao').checked;
+    guardar(); mostrarAnimacao(); resumo();
+  });
+  $('coberturaAnim').addEventListener('input', () => {
+    a.cobertura = Number($('coberturaAnim').value) / 100;
+    guardar(); mostrarAnimacao(); resumo();
+  });
+  $('opacidadeAnim').addEventListener('input', () => {
+    a.opacidade = Number($('opacidadeAnim').value) / 100;
+    guardar(); mostrarAnimacao();
+  });
+  $('qualAnimacao').addEventListener('change', () => {
+    a.id = $('qualAnimacao').value || null;
+    guardar(); resumo();
+  });
+
+  fetch('/api/animacoes').then((x) => x.json()).then((r) => {
+    const lista = r.animacoes || [];
+    if (!lista.length) {
+      $('semAnimacao').classList.remove('oculto');
+      $('usarAnimacao').disabled = true;
+      return;
+    }
+    $('qualAnimacao').innerHTML = lista.map((x) =>
+      '<option value="' + esc(x.id) + '">' + esc(x.nome) + '</option>').join('');
+    // se a que estava escolhida sumiu da pasta, cai na primeira
+    if (!lista.some((x) => x.id === a.id)) a.id = lista[0].id;
+    $('qualAnimacao').value = a.id;
+    guardar(); resumo();
+  }).catch(() => {});
+
+  window.__mostrarAnim = mostrarAnimacao;
+  mostrarAnimacao();
 
   // aplica o formato lembrado (dispara os ajustes de tela junto)
   const btnFmt = document.querySelector('#formatos .escolha[data-formato="' + cfg.formato + '"]');
@@ -1338,6 +1441,11 @@
         legendar: cfg.legenda && formato !== 'original',
         textoGancho: cfg.gancho, tamanhoLegenda: cfg.tamLegenda,
         detectarWebcam: cfg.focarRosto, detectarMomentos: cfg.picos,
+        animacao: (cfg.animacao.ligada && cfg.animacao.id) ? {
+          id: cfg.animacao.id,
+          cobertura: cfg.animacao.cobertura,
+          opacidade: cfg.animacao.opacidade,
+        } : null,
         idioma: 'pt', usarIA: !!$('chaveIA').value.trim(), chaveIA: $('chaveIA').value.trim(),
       }),
     }).then((x) => x.json()).then((r) => {

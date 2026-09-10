@@ -272,15 +272,35 @@ function filtroDeFormato(formato, recorte) {
 }
 
 /**
+ * Confere se da pra usar a animacao pedida e normaliza os numeros.
+ * Um gif que sumiu do disco nao pode derrubar a geracao inteira - nesse caso
+ * o clipe sai sem animacao, igual a antes.
+ * @returns {object|null} { arquivo, cobertura, opacidade }
+ */
+function animacaoValida(a) {
+  if (!a || !a.arquivo) return null;
+  try { if (!fs.statSync(a.arquivo).isFile()) return null; } catch (_) { return null; }
+  return {
+    arquivo: a.arquivo,
+    // quanto do clipe ela cobre, contado do comeco
+    cobertura: Math.max(0.05, Math.min(1, Number(a.cobertura) || 0.6)),
+    opacidade: Math.max(0.1, Math.min(1, a.opacidade == null ? 1 : Number(a.opacidade))),
+  };
+}
+
+/**
  * Corta um clipe.
- * @param {object} o { video, inicio, duracao, destino, formato, arquivoAss, pastaTrabalho, aoProgredir }
+ * @param {object} o { video, inicio, duracao, destino, formato, arquivoAss,
+ *                     animacao, pastaTrabalho, aoProgredir }
  */
 async function cortarClipe(o) {
   const { ffmpeg } = await garantirFfmpeg();
 
-  // Sem reenquadrar e sem legenda nao ha nada pra desenhar: copiamos o fluxo
-  // original bit a bit. Zero recodificacao, zero perda, e sai em segundos.
-  if (o.formato === 'original' && !o.arquivoAss) {
+  const anim = animacaoValida(o.animacao);
+
+  // Sem reenquadrar, sem legenda e sem animacao nao ha nada pra desenhar:
+  // copiamos o fluxo original bit a bit. Zero recodificacao, zero perda.
+  if (o.formato === 'original' && !o.arquivoAss && !anim) {
     await rodar(ffmpeg, [
       '-y', '-ss', String(o.inicio), '-i', o.video, '-t', String(o.duracao),
       '-c', 'copy', '-avoid_negative_ts', 'make_zero',
@@ -297,8 +317,17 @@ async function cortarClipe(o) {
     '-y',
     '-ss', String(o.inicio),          // seek antes do input: rapido
     '-i', o.video,
-    '-t', String(o.duracao),
   ];
+
+  // O gif entra como segundo input. -ignore_loop 0 faz ele repetir sozinho:
+  // a animacao tem 11s e o clipe tem 30 e poucos, entao sem loop ela sumiria
+  // no meio do caminho.
+  if (anim) args.push('-ignore_loop', '0', '-i', anim.arquivo);
+
+  // -t vai depois de TODOS os inputs, pra valer como opcao de saida. Se ficar
+  // entre os inputs ele passa a limitar o input seguinte, e ai quem manda no
+  // tamanho do arquivo vira o gif em loop infinito - o clipe saia com minutos.
+  args.push('-t', String(o.duracao));
 
   const filtroBase = filtroDeFormato(o.formato, o.recorte);
   // A legenda entra depois do enquadramento, ja no tamanho final.
@@ -306,13 +335,35 @@ async function cortarClipe(o) {
   // isso evita todo o inferno de escapar caminho do Windows no filtro.
   const legenda = o.arquivoAss ? "subtitles=" + o.arquivoAss : null;
 
-  if (filtroBase) {
-    const complexo = legenda
-      ? filtroBase.replace(/\[v\]$/, '[vf];[vf]' + legenda + '[v]')
-      : filtroBase;
-    args.push('-filter_complex', complexo, '-map', '[v]', '-map', '0:a?');
-  } else if (legenda) {
-    args.push('-vf', legenda);
+  // Monta a corrente em etapas, cada uma pegando o rotulo que a anterior
+  // deixou. Assim enquadramento, legenda e animacao entram em qualquer
+  // combinacao sem uma precisar saber da outra.
+  const partes = [];
+  let rotulo = '[0:v]';
+  if (filtroBase) { partes.push(filtroBase); rotulo = '[v]'; }
+
+  // A animacao entra ANTES da legenda de proposito: ela ocupa a tela inteira,
+  // e se viesse por ultimo passaria por cima do gancho. Texto ilegivel derruba
+  // o corte inteiro; a animacao atras nao atrapalha nada.
+  if (anim) {
+    const ate = (o.duracao * anim.cobertura).toFixed(2);
+    // format=rgba mantem o fundo transparente do gif; sem isso ele vira
+    // um retangulo preto por cima do video.
+    let prep = '[1:v]format=rgba,scale=' + LARGURA + ':' + ALTURA +
+               ':force_original_aspect_ratio=decrease:flags=lanczos';
+    if (anim.opacidade < 1) {
+      prep += ',colorchannelmixer=aa=' + anim.opacidade.toFixed(2);
+    }
+    partes.push(prep + '[anim]');
+    partes.push(rotulo + '[anim]overlay=(W-w)/2:(H-h)/2:' +
+                "enable='lte(t," + ate + ")'[vanim]");
+    rotulo = '[vanim]';
+  }
+
+  if (legenda) { partes.push(rotulo + legenda + '[vleg]'); rotulo = '[vleg]'; }
+
+  if (partes.length) {
+    args.push('-filter_complex', partes.join(';'), '-map', rotulo, '-map', '0:a?');
   }
 
   const q = perfilDeQualidade(o.qualidade);

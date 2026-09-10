@@ -13,6 +13,7 @@ const momentos = require('./momentos');
 const { encontrarCortes, achatarPalavras, mmss } = require('./score');
 const { gerarCopy, gerarGanchoDeTela } = require('./copy');
 const { interpretar } = require('./intencao');
+const animacao = require('./animacao');
 
 const RAIZ = path.join(__dirname, '..');
 // Em servidor, tudo que o app grava vai pro volume persistente (DADOS) - senao
@@ -127,6 +128,11 @@ function transcrever(audio, destinoJson, duracao, modelo, idioma, aoProgredir) {
 async function processar(opcoes, avisar) {
   const video = opcoes.video;
   if (!fs.existsSync(video)) throw new Error('Nao achei esse arquivo: ' + video);
+
+  // O id que veio da janela vira caminho aqui, uma vez so. Assim o caminho
+  // ja resolvido entra no sessao.json e o "refazer" acha o gif depois sem
+  // precisar consultar a pasta de novo.
+  opcoes.animacao = prepararAnimacao(opcoes.animacao, avisar);
 
   fs.mkdirSync(TRABALHO, { recursive: true });
   fs.mkdirSync(SAIDA, { recursive: true });
@@ -396,6 +402,26 @@ function quebrar(texto, largura) {
 }
 
 
+/**
+ * Deixa a animacao pronta pro ffmpeg, ou devolve null se nao for usar.
+ * Um gif que nao existe mais nao pode derrubar a geracao inteira: avisa e
+ * segue sem ele.
+ */
+function prepararAnimacao(pedido, avisar) {
+  if (!pedido || !pedido.id) return null;
+  const arquivo = animacao.resolver(pedido.id);
+  if (!arquivo) {
+    if (avisar) avisar({ tipo: 'aviso', msg: 'Nao achei a animacao "' + pedido.id + '" - vou gerar sem ela.' });
+    return null;
+  }
+  return {
+    id: pedido.id,
+    arquivo: arquivo,
+    cobertura: Number(pedido.cobertura) || 0.6,
+    opacidade: pedido.opacidade == null ? 1 : Number(pedido.opacidade),
+  };
+}
+
 // ---------------------------------------------------------------- um clipe
 
 /**
@@ -471,6 +497,7 @@ async function renderizarClipe(ctx, c) {
     recorte: opcoes.recorte,
     qualidade: opcoes.qualidade || 'maxima',
     arquivoAss,
+    animacao: opcoes.animacao,
     pastaTrabalho: TRABALHO,
     aoProgredir: (frac) => aoProgredir(frac,
       'Gerando o ' + rotulo + '... ' + Math.round(frac * 100) + '%'),

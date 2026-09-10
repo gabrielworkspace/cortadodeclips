@@ -582,6 +582,15 @@ const servidor = http.createServer(async (req, res) => {
       return servirArquivo(req, res, resolvido);
     }
 
+    // As animacoes que dao pra por em cima do clipe. Basta jogar um gif na
+    // pasta animacoes/ que ele aparece aqui - nao precisa mexer em codigo.
+    if (rota === '/api/animacoes') {
+      const { listar } = require('./animacao');
+      return json(res, 200, { animacoes: listar().map((a) => ({
+        id: a.id, nome: a.nome, tamanhoMb: a.tamanhoMb,
+      })) });
+    }
+
     if (rota === '/api/saida') {
       return json(res, 200, { pasta: SAIDA });
     }

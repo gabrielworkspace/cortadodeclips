@@ -148,7 +148,7 @@ QUALIDADE DA TRANSCRIÇÃO
   Equilibrada  - o padrão, recomendado
   Melhor       - 3x mais lenta, mais precisa
 
-LEGENDA E GANCHO (no botão "Ajustes", no topo)
+LEGENDA E GANCHO (na etapa 3, no fim da tela)
   Gancho na tela  - um texto grande nos primeiros segundos, feito a
                     partir da própria fala do trecho. Segura quem
                     assiste sem som. Funciona mesmo com a legenda
@@ -190,6 +190,47 @@ cartao de clipe tem um botao "Ajustar".
 
   Obs: isso so funciona nos clipes gerados desta versao em diante.
   Em pasta de rodada antiga ele avisa que precisa gerar de novo.
+
+
+ANIMACAO POR CIMA DO VIDEO (Street Fighter)
+-------------------------------------------
+
+Na etapa 3, no quadro "O que aparece na tela do clipe", tem tres
+caixas pra marcar:
+
+  GANCHO NA TELA           o texto grande dos 4 primeiros segundos
+  LEGENDA PALAVRA A        a legenda estilo Shorts
+  PALAVRA
+  ANIMACAO POR CIMA        a animacao do Street Fighter
+
+Quando voce marca a animacao aparecem os controles dela:
+
+  QUAL ANIMACAO   a lista do que tem na pasta  animacoes\
+  QUANTO DO       quanto do corte ela fica na tela, contando do
+  CLIPE           comeco. O padrao e 60%. Num corte de 45s, isso
+                  da uns 27s de animacao.
+  TRANSPARENCIA   100% e a animacao cheia; abaixo disso ela fica
+                  mais apagada, deixando o video aparecer mais.
+
+A animacao repete sozinha. O gif do Street Fighter tem 11 segundos,
+entao num corte de 45s ele roda umas duas vezes e meia pra cobrir
+os 60%.
+
+O texto do gancho e a legenda ficam POR CIMA da animacao, nunca
+atras - senao nao daria pra ler.
+
+PRA ADICIONAR OUTRA ANIMACAO
+    Jogue o arquivo .gif na pasta  animacoes\  e recarregue a
+    tela do programa. Ele aparece na lista sozinho.
+
+    O gif precisa ser DE FUNDO TRANSPARENTE, senao ele vira um
+    retangulo tapando o video inteiro. O tamanho ideal e
+    1080x1920 (o mesmo do corte vertical); se for outro tamanho,
+    ele entra centralizado sem distorcer.
+
+Obs: a animacao deixa a geracao um pouco mais lenta, porque o
+video precisa ser desenhado quadro a quadro por cima. Uns poucos
+segundos a mais por clipe.
 
 
 A NOTA DE ENGAJAMENTO
